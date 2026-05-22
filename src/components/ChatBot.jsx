@@ -9,7 +9,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://demo-backend-k0yn.onrender.com";
 
 const ChatBot = () => {
   const { auth, token } = useAuth();
@@ -138,7 +138,7 @@ const ChatBot = () => {
   useEffect(() => {
     if (isOpen && !activeTicket && chatLog.length === 0 && auth?.user) {
       showMainMenu(
-        `Welcome ${auth.user.name}, what may I help you with today?`,
+        `Welcome ${auth.user.name}, what may I help you with today?`
       );
     }
   }, [isOpen, activeTicket, chatLog.length, auth]);
@@ -230,7 +230,7 @@ const ChatBot = () => {
           ]);
         } else {
           const orderOptions = data.orders.map(
-            (o) => o.orderNumber || o._id.substring(0, 8),
+            (o) => o.orderNumber || o._id.substring(0, 8)
           );
           setChatLog((prev) => [
             ...prev,
@@ -312,7 +312,7 @@ const ChatBot = () => {
           {
             withCredentials: true,
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
         // Do NOT set inputMode to waiting. Let the user keep typing.
         syncTickets(); // Fetch immediate update
@@ -348,7 +348,7 @@ const ChatBot = () => {
           {
             withCredentials: true,
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
 
         hasAutoOpened.current = true; // Mark to prevent random reopening
@@ -433,7 +433,9 @@ const ChatBot = () => {
       )}
 
       <div
-        className={`chat-window ${isOpen ? "open" : ""} ${isFullScreen ? "fullscreen" : ""}`}
+        className={`chat-window ${isOpen ? "open" : ""} ${
+          isFullScreen ? "fullscreen" : ""
+        }`}
       >
         <div className="chat-header">
           <div className="chat-header-info">

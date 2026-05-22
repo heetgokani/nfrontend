@@ -27,7 +27,9 @@ const CreateStock = ({ onEditProduct }) => {
   const fetchStock = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/stock/all");
+      const res = await axios.get(
+        "https://demo-backend-k0yn.onrender.com/api/stock/all"
+      );
       setStockData(res.data);
     } catch (err) {
       toast.error("Error fetching stock data");
@@ -43,7 +45,7 @@ const CreateStock = ({ onEditProduct }) => {
   const handleExport = async () => {
     try {
       const response = await axios({
-        url: "http://localhost:5000/api/stock/export",
+        url: "https://demo-backend-k0yn.onrender.com/api/stock/export",
         method: "GET",
         responseType: "blob",
       });
@@ -67,7 +69,10 @@ const CreateStock = ({ onEditProduct }) => {
 
     setUploading(true);
     try {
-      await axios.post("http://localhost:5000/api/stock/import", formData);
+      await axios.post(
+        "https://demo-backend-k0yn.onrender.com/api/stock/import",
+        formData
+      );
       toast.success("Stock updated from Excel!");
       fetchStock();
     } catch (err) {
@@ -414,9 +419,9 @@ const CreateStock = ({ onEditProduct }) => {
                   {filteredStock.map((item) => {
                     const imgUrl =
                       item.images && item.images[0]
-                        ? `http://localhost:5000${item.images[0]}`
+                        ? `https://demo-backend-k0yn.onrender.com${item.images[0]}`
                         : item.productId?.thumbnail
-                        ? `http://localhost:5000${item.productId.thumbnail}`
+                        ? `https://demo-backend-k0yn.onrender.com${item.productId.thumbnail}`
                         : null;
 
                     return (

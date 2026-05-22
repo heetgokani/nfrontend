@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 // ADDED FiDownload TO THIS IMPORT
 import { FiStar, FiX, FiCheckCircle, FiDownload } from "react-icons/fi";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://demo-backend-k0yn.onrender.com";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);

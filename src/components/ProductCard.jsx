@@ -44,7 +44,7 @@ const ProductCard = ({ product }) => {
       const fetchRating = async () => {
         try {
           const res = await axios.get(
-            `http://localhost:5000/api/reviews/${selectedVariant._id}`,
+            `https://demo-backend-k0yn.onrender.com/api/reviews/${selectedVariant._id}`
           );
           setRatingInfo({
             average: res.data.averageRating || 0,
@@ -61,7 +61,9 @@ const ProductCard = ({ product }) => {
   useEffect(() => {
     if (user && product?._id) {
       axios
-        .get("http://localhost:5000/api/wishlist", { withCredentials: true })
+        .get("https://demo-backend-k0yn.onrender.com/api/wishlist", {
+          withCredentials: true,
+        })
         .then((res) => {
           const items = res.data?.items || [];
           const foundItem = items.find(
@@ -70,7 +72,7 @@ const ProductCard = ({ product }) => {
                 item.product === product._id) &&
               (!selectedVariant ||
                 item.variant?._id === selectedVariant._id ||
-                item.variant === selectedVariant._id),
+                item.variant === selectedVariant._id)
           );
 
           if (foundItem) {
@@ -107,7 +109,7 @@ const ProductCard = ({ product }) => {
     const colors = new Map();
     product.variants.forEach((v) => {
       const colorAttr = v.attributes?.find(
-        (a) => a.name.toLowerCase() === "color",
+        (a) => a.name.toLowerCase() === "color"
       );
       if (colorAttr && !colors.has(colorAttr.value)) {
         colors.set(colorAttr.value, v);
@@ -122,14 +124,14 @@ const ProductCard = ({ product }) => {
   const getImageUrl = (path) => {
     if (!path) return "https://via.placeholder.com/300";
     if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
+    return `https://demo-backend-k0yn.onrender.com${path}`;
   };
 
   const originalPrice = Number(
     selectedVariant?.price ||
       selectedVariant?.originalPrice ||
       product?.price ||
-      0,
+      0
   );
 
   const discountPrice = Number(selectedVariant?.discountPrice || 0);
@@ -137,7 +139,7 @@ const ProductCard = ({ product }) => {
   const currentPrice = isSale ? discountPrice : originalPrice;
 
   const displayImg = getImageUrl(
-    selectedVariant?.images?.[0] || product?.thumbnail,
+    selectedVariant?.images?.[0] || product?.thumbnail
   );
 
   const handleAddToCart = async (e) => {
@@ -148,13 +150,13 @@ const ProductCard = ({ product }) => {
     }
     try {
       await axios.post(
-        "http://localhost:5000/api/cart/add",
+        "https://demo-backend-k0yn.onrender.com/api/cart/add",
         {
           productId: product._id,
           variantId: selectedVariant?._id || null,
           quantity: 1,
         },
-        { withCredentials: true },
+        { withCredentials: true }
       );
       toast.success("Added to Cart!");
       window.dispatchEvent(new Event("cartUpdated"));
@@ -172,17 +174,16 @@ const ProductCard = ({ product }) => {
     try {
       if (!wishlisted) {
         const res = await axios.post(
-          "http://localhost:5000/api/wishlist/add",
+          "https://demo-backend-k0yn.onrender.com/api/wishlist/add",
           {
             productId: product._id,
             variantId: selectedVariant?._id || null,
           },
-          { withCredentials: true },
+          { withCredentials: true }
         );
         setWishlisted(true);
         const newItem = res.data.wishlist?.items?.find(
-          (i) =>
-            i.product === product._id && i.variant === selectedVariant?._id,
+          (i) => i.product === product._id && i.variant === selectedVariant?._id
         );
         if (newItem) setWishlistItemId(newItem._id);
 
@@ -191,8 +192,8 @@ const ProductCard = ({ product }) => {
       } else {
         if (wishlistItemId) {
           await axios.delete(
-            `http://localhost:5000/api/wishlist/remove/${wishlistItemId}`,
-            { withCredentials: true },
+            `https://demo-backend-k0yn.onrender.com/api/wishlist/remove/${wishlistItemId}`,
+            { withCredentials: true }
           );
           setWishlisted(false);
           setWishlistItemId(null);

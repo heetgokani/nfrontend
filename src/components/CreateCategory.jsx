@@ -18,7 +18,7 @@ const CreateCategory = () => {
   const [editingId, setEditingId] = useState(null);
 
   // --- FIX: Point directly to Backend Port 5000 ---
-  const API_URL = "http://localhost:5000/api/category";
+  const API_URL = "https://demo-backend-k0yn.onrender.com/api/category";
 
   // Initial Form State
   const initialState = {

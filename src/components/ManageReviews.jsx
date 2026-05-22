@@ -15,7 +15,7 @@ const ManageReviews = () => {
       // ⚠️ IMPORTANT: This backend route MUST exist and use .populate()
       // to get the user and product details, otherwise the table will be empty!
       const res = await axios.get(
-        "http://localhost:5000/api/reviews/admin/all"
+        "https://demo-backend-k0yn.onrender.com/api/reviews/admin/all"
       );
       setReviews(res.data.reviews || []);
       setFiltered(res.data.reviews || []);
@@ -48,9 +48,12 @@ const ManageReviews = () => {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/reviews/${id}/status`, {
-        status: newStatus,
-      });
+      await axios.put(
+        `https://demo-backend-k0yn.onrender.com/api/reviews/${id}/status`,
+        {
+          status: newStatus,
+        }
+      );
       toast.success(`Review ${newStatus} successfully`);
       loadReviews();
     } catch (err) {
@@ -61,7 +64,9 @@ const ManageReviews = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/reviews/${id}`);
+        await axios.delete(
+          `https://demo-backend-k0yn.onrender.com/api/reviews/${id}`
+        );
         toast.success("Review deleted successfully");
         loadReviews();
       } catch (err) {
@@ -231,9 +236,9 @@ const ManageReviews = () => {
               const p = rev.variant?.productId || {};
               const v = rev.variant || {};
               const displayImg = v.images?.[0]
-                ? `http://localhost:5000${v.images[0]}`
+                ? `https://demo-backend-k0yn.onrender.com${v.images[0]}`
                 : p.thumbnail
-                ? `http://localhost:5000${p.thumbnail}`
+                ? `https://demo-backend-k0yn.onrender.com${p.thumbnail}`
                 : "https://via.placeholder.com/50";
               const isHovered = hoveredRow === rev._id;
 

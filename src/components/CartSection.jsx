@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { IoCloseOutline } from "react-icons/io5";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://demo-backend-k0yn.onrender.com";
 
 const CartSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
@@ -45,7 +45,7 @@ const CartSection = () => {
       await axios.put(
         `${API_URL}/api/cart/update/${itemId}`,
         { action },
-        { withCredentials: true },
+        { withCredentials: true }
       );
       await fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
@@ -346,7 +346,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock,
+                                          maxStock
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -381,7 +381,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock,
+                                          maxStock
                                         )
                                       }
                                       disabled={
@@ -499,7 +499,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock,
+                                          maxStock
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -520,7 +520,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock,
+                                          maxStock
                                         )
                                       }
                                       disabled={

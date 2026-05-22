@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://demo-backend-k0yn.onrender.com";
 
 const CreateChat = () => {
   const { token } = useAuth();
@@ -42,7 +42,7 @@ const CreateChat = () => {
       setSelectedTicket((prevTicket) => {
         if (!prevTicket) return null;
         const updatedTicket = fetchedTickets.find(
-          (t) => t.ticketId === prevTicket.ticketId,
+          (t) => t.ticketId === prevTicket.ticketId
         );
         return updatedTicket || prevTicket;
       });
@@ -70,7 +70,7 @@ const CreateChat = () => {
           const nameMatch = t.user?.name?.toLowerCase().includes(lowerQ);
           const statusMatch = t.status?.toLowerCase().includes(lowerQ);
           return idMatch || emailMatch || nameMatch || statusMatch;
-        }),
+        })
       );
     } else {
       setFiltered(tickets);
@@ -95,7 +95,7 @@ const CreateChat = () => {
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       setReplyText("");
@@ -114,7 +114,7 @@ const CreateChat = () => {
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
       toast.success(`Ticket ${selectedTicket.ticketId} Closed`);
 
@@ -137,7 +137,9 @@ const CreateChat = () => {
           borderRadius: "50px",
           fontSize: "11px",
           fontWeight: "700",
-          border: `1px solid ${isOpen ? "#bbf7d0" : "var(--mern-admin-border)"}`,
+          border: `1px solid ${
+            isOpen ? "#bbf7d0" : "var(--mern-admin-border)"
+          }`,
           display: "flex",
           alignItems: "center",
           gap: "4px",
@@ -512,7 +514,11 @@ const CreateChat = () => {
                 filtered.map((ticket) => (
                   <div
                     key={ticket._id}
-                    className={`ticket-item ${selectedTicket?.ticketId === ticket.ticketId ? "active" : ""}`}
+                    className={`ticket-item ${
+                      selectedTicket?.ticketId === ticket.ticketId
+                        ? "active"
+                        : ""
+                    }`}
                     onClick={() => setSelectedTicket(ticket)}
                   >
                     <div
@@ -590,7 +596,7 @@ const CreateChat = () => {
                         <FiClock size={10} />
                         {new Date(ticket.createdAt).toLocaleDateString(
                           "en-US",
-                          { month: "short", day: "numeric" },
+                          { month: "short", day: "numeric" }
                         )}
                       </span>
                     </div>
@@ -709,7 +715,7 @@ const CreateChat = () => {
                           style={{ textAlign: isAdmin ? "right" : "left" }}
                         >
                           {new Date(
-                            msg.createdAt || Date.now(),
+                            msg.createdAt || Date.now()
                           ).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",

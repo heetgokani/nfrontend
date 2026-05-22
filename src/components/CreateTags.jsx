@@ -30,7 +30,9 @@ const CreateTags = () => {
 
   const fetchTags = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/tags");
+      const res = await axios.get(
+        "https://demo-backend-k0yn.onrender.com/api/tags"
+      );
       setTags(res.data);
     } catch (err) {
       toast.error("Failed to fetch tags");
@@ -49,12 +51,17 @@ const CreateTags = () => {
     try {
       if (editId) {
         if (!canEdit) return toast.error("You don't have permission to edit.");
-        await axios.put(`http://localhost:5000/api/tags/${editId}`, { name });
+        await axios.put(
+          `https://demo-backend-k0yn.onrender.com/api/tags/${editId}`,
+          { name }
+        );
         toast.success("Tag updated!");
         setEditId(null);
       } else {
         if (!canAdd) return toast.error("You don't have permission to add.");
-        await axios.post("http://localhost:5000/api/tags", { name });
+        await axios.post("https://demo-backend-k0yn.onrender.com/api/tags", {
+          name,
+        });
         toast.success("Tag created!");
       }
       setName("");
@@ -77,7 +84,9 @@ const CreateTags = () => {
     if (!canDelete) return toast.error("You don't have permission to delete.");
     if (!window.confirm("Are you sure you want to delete this tag?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/tags/${id}`);
+      await axios.delete(
+        `https://demo-backend-k0yn.onrender.com/api/tags/${id}`
+      );
       toast.success("Tag deleted successfully!");
       if (editId === id) {
         setEditId(null);

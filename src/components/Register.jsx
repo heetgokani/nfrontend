@@ -38,8 +38,8 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/user/register",
-        formData, // Sends name, email, password, and confirmpassword
+        "https://demo-backend-k0yn.onrender.com/api/user/register",
+        formData // Sends name, email, password, and confirmpassword
       );
 
       if (response.status === 201 || response.data.status === "success") {

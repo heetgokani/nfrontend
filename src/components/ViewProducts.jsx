@@ -18,14 +18,16 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
 
   const load = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/products/");
+      const res = await axios.get(
+        "https://demo-backend-k0yn.onrender.com/api/products/"
+      );
       const baseProducts = res.data;
 
       const productsWithVariants = await Promise.all(
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `http://localhost:5000/api/products/${p._id}`
+              `https://demo-backend-k0yn.onrender.com/api/products/${p._id}`
             );
             return { ...p, variants: detailRes.data.variants || [] };
           } catch (e) {
@@ -72,7 +74,9 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
       )
     ) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/delete/${id}`);
+        await axios.delete(
+          `https://demo-backend-k0yn.onrender.com/api/products/delete/${id}`
+        );
         toast.success("Product deleted successfully");
         load();
       } catch (err) {
@@ -127,7 +131,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
     try {
       // FIX: Send a clean JSON payload for status updates so it doesn't trigger formatting errors
       await axios.put(
-        `http://localhost:5000/api/products/update/${product._id}`,
+        `https://demo-backend-k0yn.onrender.com/api/products/update/${product._id}`,
         {
           status: newStatus,
         },
@@ -363,9 +367,9 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
             {filtered.map((p) => {
               const firstVariant = p.variants?.[0] || {};
               const displayImg = firstVariant.images?.[0]
-                ? `http://localhost:5000${firstVariant.images[0]}`
+                ? `https://demo-backend-k0yn.onrender.com${firstVariant.images[0]}`
                 : p.thumbnail
-                ? `http://localhost:5000${p.thumbnail}`
+                ? `https://demo-backend-k0yn.onrender.com${p.thumbnail}`
                 : "https://via.placeholder.com/50";
               const isHovered = hoveredRow === p._id;
               const variantCount = p.variants?.length || 0;

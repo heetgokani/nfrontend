@@ -155,7 +155,7 @@ const CreateGst = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  const API_URL = "http://localhost:5000/api/gst";
+  const API_URL = "https://demo-backend-k0yn.onrender.com/api/gst";
 
   const initialState = {
     taxType: "SGST",

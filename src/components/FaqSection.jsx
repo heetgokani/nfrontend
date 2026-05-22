@@ -12,7 +12,9 @@ const FaqSection = () => {
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/faq/all");
+        const res = await axios.get(
+          "https://demo-backend-k0yn.onrender.com/api/faq/all"
+        );
         // Filter to only show active FAQs and sort by order
         const activeFaqs = res.data
           .filter((item) => item.isActive)

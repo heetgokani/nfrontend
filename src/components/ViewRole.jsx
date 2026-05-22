@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { PageHeader } from "./Crashed";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000/api/role";
+const API_URL = "https://demo-backend-k0yn.onrender.com/api/role";
 const permissionCategories = [
   "role",
   "category",

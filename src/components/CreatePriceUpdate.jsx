@@ -31,8 +31,8 @@ const CreatePriceUpdate = () => {
     setFetching(true);
     try {
       const [prodRes, catRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/products/"),
-        axios.get("http://localhost:5000/api/category/all"),
+        axios.get("https://demo-backend-k0yn.onrender.com/api/products/"),
+        axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
       ]);
 
       const baseProducts = prodRes.data;
@@ -43,7 +43,7 @@ const CreatePriceUpdate = () => {
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `http://localhost:5000/api/products/${p._id}`
+              `https://demo-backend-k0yn.onrender.com/api/products/${p._id}`
             );
             return { ...p, variants: detailRes.data.variants || [] };
           } catch (e) {
@@ -224,7 +224,7 @@ const CreatePriceUpdate = () => {
       // 3. Send Request
       try {
         await axios.put(
-          `http://localhost:5000/api/products/update/${product._id}`,
+          `https://demo-backend-k0yn.onrender.com/api/products/update/${product._id}`,
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -543,9 +543,9 @@ const CreatePriceUpdate = () => {
                   const isSelected = selectedIds.includes(p._id);
                   const firstVariant = p.variants?.[0] || {};
                   const displayImg = firstVariant.images?.[0]
-                    ? `http://localhost:5000${firstVariant.images[0]}`
+                    ? `https://demo-backend-k0yn.onrender.com${firstVariant.images[0]}`
                     : p.thumbnail
-                    ? `http://localhost:5000${p.thumbnail}`
+                    ? `https://demo-backend-k0yn.onrender.com${p.thumbnail}`
                     : "https://via.placeholder.com/40";
 
                   const priceData = getExplicitPriceData(p);

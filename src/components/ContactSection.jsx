@@ -31,8 +31,8 @@ const ContactSection = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/contact/submit",
-        formData,
+        "https://demo-backend-k0yn.onrender.com/api/contact/submit",
+        formData
       );
 
       // Success Toast

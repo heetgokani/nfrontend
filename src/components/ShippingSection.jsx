@@ -17,7 +17,7 @@ const ShippingSection = () => {
 
       // Fetch the delivery duration for the saved PIN code
       axios
-        .get("http://localhost:5000/api/shipping/all")
+        .get("https://demo-backend-k0yn.onrender.com/api/shipping/all")
         .then((res) => {
           const methods = res.data.methods || [];
           const matchedRule = methods.find(

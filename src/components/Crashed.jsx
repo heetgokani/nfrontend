@@ -140,7 +140,7 @@ const Crashed = () => {
   useEffect(() => {
     if (auth?.user && canShowStockControl) {
       axios
-        .get("http://localhost:5000/api/stock/all")
+        .get("https://demo-backend-k0yn.onrender.com/api/stock/all")
         .then((res) => {
           const lowStock = res.data.filter(
             (item) => Number(item.stock) < 3
@@ -175,7 +175,7 @@ const Crashed = () => {
     if (!productId) return toast.error("Product ID missing");
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/products/${productId}`
+        `https://demo-backend-k0yn.onrender.com/api/products/${productId}`
       );
       const p = res.data.product;
 

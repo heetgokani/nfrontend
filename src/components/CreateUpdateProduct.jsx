@@ -32,14 +32,16 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/products");
+      const res = await axios.get(
+        "https://demo-backend-k0yn.onrender.com/api/products"
+      );
       const baseProducts = res.data;
 
       const productsWithVariants = await Promise.all(
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `http://localhost:5000/api/products/${p._id}`
+              `https://demo-backend-k0yn.onrender.com/api/products/${p._id}`
             );
             return { product: p, variants: detailRes.data.variants || [] };
           } catch (e) {
@@ -141,7 +143,7 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
     setUploading(true);
     try {
       await axios.post(
-        "http://localhost:5000/api/products/import-excel",
+        "https://demo-backend-k0yn.onrender.com/api/products/import-excel",
         formData
       );
       toast.success("Bulk Update Successful!");
@@ -490,9 +492,9 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
                   const brandName =
                     parent?.brand?.name || parent?.brand?.title || "N/A";
                   const imgUrl = v.images?.[0]
-                    ? `http://localhost:5000${v.images[0]}`
+                    ? `https://demo-backend-k0yn.onrender.com${v.images[0]}`
                     : parent?.thumbnail
-                    ? `http://localhost:5000${parent.thumbnail}`
+                    ? `https://demo-backend-k0yn.onrender.com${parent.thumbnail}`
                     : null;
 
                   return (

@@ -14,7 +14,7 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://demo-backend-k0yn.onrender.com";
 
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -99,7 +99,7 @@ const Header = () => {
         const filtered = res.data.filter(
           (p) =>
             p.title?.toLowerCase().includes(localSearchQuery.toLowerCase()) &&
-            p.status !== "Inactive",
+            p.status !== "Inactive"
         );
         setPreviewResults(filtered.slice(0, 5));
       } catch (err) {
@@ -132,7 +132,7 @@ const Header = () => {
             </strong>
           ) : (
             part
-          ),
+          )
         )}
       </span>
     );
@@ -569,7 +569,9 @@ const Header = () => {
                         item.variants?.[0];
                       const displayImage =
                         defaultVariant?.images?.[0] || item.thumbnail
-                          ? `${API_URL}${defaultVariant?.images?.[0] || item.thumbnail}`
+                          ? `${API_URL}${
+                              defaultVariant?.images?.[0] || item.thumbnail
+                            }`
                           : "/assets/img/placeholder.jpg";
                       const displayPrice =
                         defaultVariant?.discountPrice > 0
@@ -691,14 +693,18 @@ const Header = () => {
               (link) => (
                 <li className="mb-4" key={link}>
                   <NavLink
-                    to={`/${link.toLowerCase().replace(" ", "") === "home" ? "" : link.toLowerCase().replace(" ", "")}`}
+                    to={`/${
+                      link.toLowerCase().replace(" ", "") === "home"
+                        ? ""
+                        : link.toLowerCase().replace(" ", "")
+                    }`}
                     className="sidebar-link"
                     onClick={() => setIsSidebarOpen(false)}
                   >
                     {link}
                   </NavLink>
                 </li>
-              ),
+              )
             )}
           </ul>
         </div>

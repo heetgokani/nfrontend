@@ -47,7 +47,7 @@ const ProductSection = () => {
   const getImageUrl = (path) => {
     if (!path) return "https://via.placeholder.com/600";
     if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path}`;
+    return `https://demo-backend-k0yn.onrender.com${path}`;
   };
 
   const renderStars = (rating) => {
@@ -71,8 +71,10 @@ const ProductSection = () => {
         window.scrollTo(0, 0);
 
         const [res, attrRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/products/${id}`),
-          axios.get(`http://localhost:5000/api/attributes`),
+          axios.get(
+            `https://demo-backend-k0yn.onrender.com/api/products/${id}`
+          ),
+          axios.get(`https://demo-backend-k0yn.onrender.com/api/attributes`),
         ]);
 
         setGlobalAttributes(attrRes.data);
@@ -144,7 +146,7 @@ const ProductSection = () => {
       const fetchReviews = async () => {
         try {
           const res = await axios.get(
-            `http://localhost:5000/api/reviews/${selectedVariant._id}`
+            `https://demo-backend-k0yn.onrender.com/api/reviews/${selectedVariant._id}`
           );
           setReviewsData(res.data);
         } catch (err) {
@@ -234,7 +236,7 @@ const ProductSection = () => {
     }
     try {
       await axios.post(
-        "http://localhost:5000/api/cart/add",
+        "https://demo-backend-k0yn.onrender.com/api/cart/add",
         {
           productId: product._id,
           variantId: selectedVariant?._id || null,
@@ -258,7 +260,7 @@ const ProductSection = () => {
     }
     try {
       await axios.post(
-        "http://localhost:5000/api/cart/add",
+        "https://demo-backend-k0yn.onrender.com/api/cart/add",
         {
           productId: product._id,
           variantId: selectedVariant?._id || null,
@@ -279,7 +281,9 @@ const ProductSection = () => {
       return toast.warn("Enter a valid 6-digit pincode");
     setPincodeStatus("checking");
     try {
-      const res = await axios.get("http://localhost:5000/api/shipping/all");
+      const res = await axios.get(
+        "https://demo-backend-k0yn.onrender.com/api/shipping/all"
+      );
       const matched = res.data.methods?.find(
         (item) => item.pincode === pincode
       );

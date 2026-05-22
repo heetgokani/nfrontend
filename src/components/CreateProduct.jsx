@@ -61,12 +61,12 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     const fetchData = async () => {
       try {
         const [catRes, brandRes, attrRes, gstRes, tagRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/category/all"),
-          axios.get("http://localhost:5000/api/brands"),
-          axios.get("http://localhost:5000/api/attributes"),
-          axios.get("http://localhost:5000/api/gst"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/brands"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/attributes"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/gst"),
           axios
-            .get("http://localhost:5000/api/tags")
+            .get("https://demo-backend-k0yn.onrender.com/api/tags")
             .catch(() => ({ data: [] })), // Safe fetch for Tags
         ]);
         setCategoriesList(catRes.data);
@@ -95,7 +95,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
           const loadedGlobalImages = [null, null, null, null, null];
           if (editData.thumbnail) {
             loadedGlobalImages[0] = {
-              preview: `http://localhost:5000${editData.thumbnail}`,
+              preview: `https://demo-backend-k0yn.onrender.com${editData.thumbnail}`,
               existingPath: editData.thumbnail,
             };
           }
@@ -103,7 +103,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             editData.gallery.forEach((gImg, idx) => {
               if (idx < 4)
                 loadedGlobalImages[idx + 1] = {
-                  preview: `http://localhost:5000${gImg}`,
+                  preview: `https://demo-backend-k0yn.onrender.com${gImg}`,
                   existingPath: gImg,
                 };
             });
@@ -125,7 +125,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
               v.images.forEach((imgPath, idx) => {
                 if (imgPath && idx < 5) {
                   mappedImages[idx] = {
-                    preview: `http://localhost:5000${imgPath}`,
+                    preview: `https://demo-backend-k0yn.onrender.com${imgPath}`,
                     existingPath: imgPath,
                   };
                 }
@@ -395,14 +395,14 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     try {
       if (editData && editData._id) {
         await axios.put(
-          `http://localhost:5000/api/products/update/${editData._id}`,
+          `https://demo-backend-k0yn.onrender.com/api/products/update/${editData._id}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         toast.success("Product Updated Successfully!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/products/create",
+          "https://demo-backend-k0yn.onrender.com/api/products/create",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );

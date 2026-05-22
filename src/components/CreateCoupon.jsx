@@ -43,9 +43,9 @@ const CreateCoupon = () => {
   const fetchInitialData = async () => {
     try {
       const [couponRes, catRes, prodRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/coupons/all"),
-        axios.get("http://localhost:5000/api/category/all"),
-        axios.get("http://localhost:5000/api/products"),
+        axios.get("https://demo-backend-k0yn.onrender.com/api/coupons/all"),
+        axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
+        axios.get("https://demo-backend-k0yn.onrender.com/api/products"),
       ]);
       setCoupons(couponRes.data);
       setCategories(catRes.data);
@@ -77,12 +77,15 @@ const CreateCoupon = () => {
     try {
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/coupons/update/${editId}`,
+          `https://demo-backend-k0yn.onrender.com/api/coupons/update/${editId}`,
           formData
         );
         toast.success("Coupon Updated");
       } else {
-        await axios.post("http://localhost:5000/api/coupons/create", formData);
+        await axios.post(
+          "https://demo-backend-k0yn.onrender.com/api/coupons/create",
+          formData
+        );
         toast.success("Coupon Created");
       }
       resetForm();
@@ -125,7 +128,9 @@ const CreateCoupon = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this coupon?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/coupons/delete/${id}`);
+      await axios.delete(
+        `https://demo-backend-k0yn.onrender.com/api/coupons/delete/${id}`
+      );
       toast.success("Deleted");
       fetchInitialData();
     } catch (err) {

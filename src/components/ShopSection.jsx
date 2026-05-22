@@ -36,8 +36,8 @@ const ShopSection = () => {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/category/all"),
-          axios.get("http://localhost:5000/api/products/"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
+          axios.get("https://demo-backend-k0yn.onrender.com/api/products/"),
         ]);
         setCategoriesList(catRes.data);
         const activeProducts = prodRes.data.filter(
