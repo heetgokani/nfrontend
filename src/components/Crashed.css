@@ -1,0 +1,21 @@
+/* App.css */
+:root {
+  /* ---- CENTRAL THEME CONTROLLER ---- */
+
+  /* The Main Brand Color (e.g., Blue, Red, Green) */
+  --mern-admin-primary: #b517e0;
+
+  /* The Sidebar Color (e.g., Dark Slate, Black, Navy) */
+  --mern-admin-secondary: #3f1c5d;
+
+  /* Background Color for the main area */
+  --mern-admin-bg: #f1f5f9;
+
+  /* Text Colors */
+  --mern-admin-text-main: #0f172a; /* For cards/headings */
+  --mern-admin-text-white: #ffffff; /* FORCED WHITE for Sidebar */
+
+  /* UI Elements */
+  --mern-admin-border: #e2e8f0;
+  --mern-admin-danger: #ef4444;
+}
