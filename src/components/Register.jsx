@@ -68,9 +68,12 @@ const Register = () => {
     }
     setSendingOtp(true);
     try {
-      await axios.post("http://localhost:5000/api/user/send-otp", {
-        email: formData.email,
-      });
+      await axios.post(
+        "https://nikam-ecom-backend.onrender.com/api/user/send-otp",
+        {
+          email: formData.email,
+        }
+      );
       toast.success("OTP sent! Please check your email.");
       setOtpSent(true); // Reveal OTP and Password fields
     } catch (error) {
@@ -105,8 +108,8 @@ const Register = () => {
     try {
       const payload = { ...formData, otp: finalOtp };
       const response = await axios.post(
-        "http://localhost:5000/api/user/register",
-        payload,
+        "https://nikam-ecom-backend.onrender.com/api/user/register",
+        payload
       );
 
       if (response.status === 201 || response.data.status === "success") {
@@ -367,8 +370,8 @@ const Register = () => {
                           ? "SENDING OTP..."
                           : "SEND OTP"
                         : loading
-                          ? "CREATING..."
-                          : "CREATE ACCOUNT"}
+                        ? "CREATING..."
+                        : "CREATE ACCOUNT"}
                     </span>
                     {!(loading || sendingOtp) && (
                       <span className="btn-arrow">→</span>

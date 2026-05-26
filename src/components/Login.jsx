@@ -26,9 +26,9 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/user/login",
+        "https://nikam-ecom-backend.onrender.com/api/user/login",
         formData,
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       if (response.status === 200) {

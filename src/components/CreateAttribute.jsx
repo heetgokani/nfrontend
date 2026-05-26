@@ -39,7 +39,9 @@ const CreateAttribute = () => {
 
   const fetchAttributes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/attributes");
+      const res = await axios.get(
+        "https://nikam-ecom-backend.onrender.com/api/attributes"
+      );
       setAttributes(res.data);
     } catch (err) {
       toast.error("Failed to fetch attributes");
@@ -93,7 +95,9 @@ const CreateAttribute = () => {
         value: t.value || "",
         colorCode: t.colorCode || "#000000",
         imageFile: null,
-        imagePreview: t.image ? `http://localhost:5000${t.image}` : "",
+        imagePreview: t.image
+          ? `https://nikam-ecom-backend.onrender.com${t.image}`
+          : "",
         image: t.image || "",
         label: t.label || "",
       }))
@@ -158,14 +162,14 @@ const CreateAttribute = () => {
       // ADDED: Check if editing to use PUT route, else POST
       if (editId) {
         await axios.put(
-          `http://localhost:5000/api/attributes/${editId}`,
+          `https://nikam-ecom-backend.onrender.com/api/attributes/${editId}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         toast.success("Attribute updated successfully!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/attributes/create",
+          "https://nikam-ecom-backend.onrender.com/api/attributes/create",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -211,7 +215,9 @@ const CreateAttribute = () => {
     )
       return;
     try {
-      await axios.delete(`http://localhost:5000/api/attributes/${id}`);
+      await axios.delete(
+        `https://nikam-ecom-backend.onrender.com/api/attributes/${id}`
+      );
       toast.success("Attribute deleted");
       fetchAttributes();
     } catch (err) {
@@ -797,7 +803,7 @@ const CreateAttribute = () => {
 
                       {attr.type === "image" && t.image && (
                         <img
-                          src={`http://localhost:5000${t.image}`}
+                          src={`https://nikam-ecom-backend.onrender.com${t.image}`}
                           style={{
                             width: "20px",
                             height: "20px",

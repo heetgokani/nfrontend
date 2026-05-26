@@ -10,7 +10,9 @@ const FeaturedCollection = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products/");
+        const res = await axios.get(
+          "https://nikam-ecom-backend.onrender.com/api/products/"
+        );
 
         // 1. Just filter out inactive products (NO tag filtering)
         const activeProducts = res.data.filter((p) => p.status !== "Inactive");

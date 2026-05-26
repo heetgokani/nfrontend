@@ -3,7 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://nikam-ecom-backend.onrender.com";
 
 const CheckoutSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
@@ -99,7 +99,7 @@ const CheckoutSection = () => {
       const matchedRule = allShippingRules.find(
         (r) =>
           r.city?.toLowerCase().trim() ===
-          shippingForm.city.toLowerCase().trim(),
+          shippingForm.city.toLowerCase().trim()
       );
 
       if (matchedRule && matchedRule.isAvailable) {
@@ -220,7 +220,7 @@ const CheckoutSection = () => {
     } catch (error) {
       setAppliedCoupon({ code: null, discountAmount: 0 });
       toast.error(
-        error.response?.data?.message || "Invalid or expired coupon code.",
+        error.response?.data?.message || "Invalid or expired coupon code."
       );
     }
   };
@@ -236,7 +236,7 @@ const CheckoutSection = () => {
 
     if (!isShippingAvailable) {
       return toast.error(
-        "Please select a valid City where shipping is available.",
+        "Please select a valid City where shipping is available."
       );
     }
 
@@ -280,14 +280,14 @@ const CheckoutSection = () => {
         discountAmount: appliedCoupon.discountAmount,
         totalPrice: total,
         couponCodeApplied: appliedCoupon.code,
-      }),
+      })
     );
 
     window.location.href = "/shipping";
   };
 
   const availableCities = Array.from(
-    new Set(allShippingRules.filter((r) => r.isAvailable).map((r) => r.city)),
+    new Set(allShippingRules.filter((r) => r.isAvailable).map((r) => r.city))
   );
 
   return (
@@ -543,8 +543,8 @@ const CheckoutSection = () => {
                                         city
                                           .toLowerCase()
                                           .includes(
-                                            shippingCitySearch.toLowerCase(),
-                                          ),
+                                            shippingCitySearch.toLowerCase()
+                                          )
                                       )
                                       .map((city, index) => (
                                         <div
@@ -581,8 +581,8 @@ const CheckoutSection = () => {
                                       c
                                         .toLowerCase()
                                         .includes(
-                                          shippingCitySearch.toLowerCase(),
-                                        ),
+                                          shippingCitySearch.toLowerCase()
+                                        )
                                     ).length === 0 && (
                                       <div
                                         style={{
@@ -824,8 +824,8 @@ const CheckoutSection = () => {
                                           city
                                             .toLowerCase()
                                             .includes(
-                                              billingCitySearch.toLowerCase(),
-                                            ),
+                                              billingCitySearch.toLowerCase()
+                                            )
                                         )
                                         .map((city, index) => (
                                           <div
@@ -862,8 +862,8 @@ const CheckoutSection = () => {
                                         c
                                           .toLowerCase()
                                           .includes(
-                                            billingCitySearch.toLowerCase(),
-                                          ),
+                                            billingCitySearch.toLowerCase()
+                                          )
                                       ).length === 0 && (
                                         <div
                                           style={{

@@ -13,7 +13,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://nikam-ecom-backend.onrender.com";
 
 const CreateOrder = () => {
   const [orders, setOrders] = useState([]);

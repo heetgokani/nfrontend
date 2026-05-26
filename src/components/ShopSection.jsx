@@ -36,12 +36,12 @@ const ShopSection = () => {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/category/all"),
-          axios.get("http://localhost:5000/api/products/"),
+          axios.get("https://nikam-ecom-backend.onrender.com/api/category/all"),
+          axios.get("https://nikam-ecom-backend.onrender.com/api/products/"),
         ]);
         setCategoriesList(catRes.data);
         const activeProducts = prodRes.data.filter(
-          (p) => p.status !== "Inactive",
+          (p) => p.status !== "Inactive"
         );
         setProducts(activeProducts);
 
@@ -132,13 +132,13 @@ const ShopSection = () => {
           product.category.includes(",")
         ) {
           pIdsAndTitles.push(
-            ...product.category.split(",").map((c) => c.trim()),
+            ...product.category.split(",").map((c) => c.trim())
           );
         }
 
         const pIdsLower = pIdsAndTitles.map((id) => id?.toLowerCase() || "");
         const matchesCategory = selectedCats.some((sel) =>
-          pIdsLower.includes(sel.toLowerCase()),
+          pIdsLower.includes(sel.toLowerCase())
         );
 
         if (!matchesCategory) return false;
@@ -172,7 +172,7 @@ const ShopSection = () => {
           ?.flatMap((v) =>
             v.attributes
               ?.filter((a) => a.name?.toLowerCase() === "size")
-              .map((a) => a.value),
+              .map((a) => a.value)
           )
           .filter(Boolean);
 
@@ -225,7 +225,7 @@ const ShopSection = () => {
 
   const toggleFilter = (list, setList, item) => {
     setList((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
     );
     setVisibleLimit(6);
   };
@@ -235,7 +235,7 @@ const ShopSection = () => {
     setExpandedCats((prev) =>
       prev.includes(catId)
         ? prev.filter((id) => id !== catId)
-        : [...prev, catId],
+        : [...prev, catId]
     );
   };
 
@@ -308,7 +308,7 @@ const ShopSection = () => {
                                 toggleFilter(
                                   selectedCats,
                                   setSelectedCats,
-                                  cat._id,
+                                  cat._id
                                 )
                               }
                             >
@@ -379,7 +379,7 @@ const ShopSection = () => {
                                         toggleFilter(
                                           selectedCats,
                                           setSelectedCats,
-                                          sub._id,
+                                          sub._id
                                         )
                                       }
                                     >

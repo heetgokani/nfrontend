@@ -25,12 +25,16 @@ const CreateStock = ({ onEditProduct }) => {
   const [showLowStock, setShowLowStock] = useState(false); // NEW STATE
   const getImgUrl = (path) => {
     if (!path) return null;
-    return path.startsWith("http") ? path : `http://localhost:5000${path}`;
+    return path.startsWith("http")
+      ? path
+      : `https://nikam-ecom-backend.onrender.com${path}`;
   };
   const fetchStock = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/stock/all");
+      const res = await axios.get(
+        "https://nikam-ecom-backend.onrender.com/api/stock/all"
+      );
       setStockData(res.data);
     } catch (err) {
       toast.error("Error fetching stock data");
@@ -46,7 +50,7 @@ const CreateStock = ({ onEditProduct }) => {
   const handleExport = async () => {
     try {
       const response = await axios({
-        url: "http://localhost:5000/api/stock/export",
+        url: "https://nikam-ecom-backend.onrender.com/api/stock/export",
         method: "GET",
         responseType: "blob",
       });
@@ -70,7 +74,10 @@ const CreateStock = ({ onEditProduct }) => {
 
     setUploading(true);
     try {
-      await axios.post("http://localhost:5000/api/stock/import", formData);
+      await axios.post(
+        "https://nikam-ecom-backend.onrender.com/api/stock/import",
+        formData
+      );
       toast.success("Stock updated from Excel!");
       fetchStock();
     } catch (err) {
@@ -419,8 +426,8 @@ const CreateStock = ({ onEditProduct }) => {
                       item.images && item.images[0]
                         ? getImgUrl(item.images[0])
                         : item.productId?.thumbnail
-                          ? getImgUrl(item.productId.thumbnail)
-                          : null;
+                        ? getImgUrl(item.productId.thumbnail)
+                        : null;
                     return (
                       <tr key={item._id}>
                         <td style={s.td} data-label="Image">

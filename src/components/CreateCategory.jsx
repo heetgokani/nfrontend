@@ -18,7 +18,7 @@ const CreateCategory = () => {
   const [editingId, setEditingId] = useState(null);
 
   // --- FIX: Point directly to Backend Port 5000 ---
-  const API_URL = "http://localhost:5000/api/category";
+  const API_URL = "https://nikam-ecom-backend.onrender.com/api/category";
 
   // Initial Form State
   const initialState = {
@@ -38,7 +38,7 @@ const CreateCategory = () => {
     try {
       const res = await axios.get(`${API_URL}/all`, { withCredentials: true });
       const sortedData = res.data.sort(
-        (a, b) => (a.order || 0) - (b.order || 0),
+        (a, b) => (a.order || 0) - (b.order || 0)
       );
       setCategories(sortedData);
     } catch (err) {
@@ -97,7 +97,7 @@ const CreateCategory = () => {
       const cleanedData = {
         ...formData,
         subcategories: formData.subcategories.filter(
-          (sub) => sub.title.trim() !== "",
+          (sub) => sub.title.trim() !== ""
         ),
       };
 
