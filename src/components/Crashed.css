@@ -3,19 +3,19 @@
   /* ---- CENTRAL THEME CONTROLLER ---- */
 
   /* The Main Brand Color (e.g., Blue, Red, Green) */
-  --mern-admin-primary: #b517e0;
+  --mern-admin-primary: #407e18;
 
   /* The Sidebar Color (e.g., Dark Slate, Black, Navy) */
-  --mern-admin-secondary: #3f1c5d;
+  --mern-admin-secondary: #1c460d;
 
   /* Background Color for the main area */
-  --mern-admin-bg: #f1f5f9;
+  --mern-admin-bg: #f6fbf2;
 
   /* Text Colors */
-  --mern-admin-text-main: #0f172a; /* For cards/headings */
+  --mern-admin-text-main: #1e293b; /* For cards/headings */
   --mern-admin-text-white: #ffffff; /* FORCED WHITE for Sidebar */
 
   /* UI Elements */
-  --mern-admin-border: #e2e8f0;
+  --mern-admin-border: #d8e7cf;
   --mern-admin-danger: #ef4444;
 }

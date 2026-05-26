@@ -15,13 +15,15 @@ const ShippingSection = () => {
       const parsedShipping = JSON.parse(savedShipping);
       setShippingAddress(parsedShipping);
 
-      // Fetch the delivery duration for the saved PIN code
+      // Fetch the delivery duration and MATCH BY CITY instead of PIN Code
       axios
-        .get("https://demo-backend-k0yn.onrender.com/api/shipping/all")
+        .get("http://localhost:5000/api/shipping/all")
         .then((res) => {
           const methods = res.data.methods || [];
           const matchedRule = methods.find(
-            (r) => r.pincode === parsedShipping.zip
+            (r) =>
+              r.city?.toLowerCase().trim() ===
+              parsedShipping.city?.toLowerCase().trim(),
           );
           if (matchedRule && matchedRule.deliveryDuration) {
             setDeliveryDuration(matchedRule.deliveryDuration);
@@ -101,7 +103,7 @@ const ShippingSection = () => {
                 />
               </svg>
             </li>
-            <li style={{ color: "#de433f", fontWeight: "600" }}>Shipping</li>
+            <li style={{ color: "#407e18", fontWeight: "600" }}>Shipping</li>
           </ul>
         </div>
       </div>
@@ -198,7 +200,7 @@ const ShippingSection = () => {
                             {shippingAddress.zip}
                           </div>
 
-                          {/* NEW: Delivery Duration Added Here */}
+                          {/* Delivery Duration Added Here */}
                           {deliveryDuration && (
                             <div className="col-md-12 mt-2">
                               <div
@@ -313,8 +315,8 @@ const ShippingSection = () => {
                         href="/payment"
                         className="checkout-page-btn minicart-btn btn-primary"
                         style={{
-                          backgroundColor: "#de433f",
-                          borderColor: "#de433f",
+                          backgroundColor: "#407e18",
+                          borderColor: "#407e18",
                           color: "#fff",
                         }}
                       >

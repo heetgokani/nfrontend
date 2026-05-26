@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom"; // ✅ IMPORTED useLocation
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Header from "./components/Header";
 import Home from "./pages/Home";
@@ -18,58 +18,56 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Crashed from "./components/Crashed";
-
-import ChatBot from "./components/ChatBot";
+import ForgotPassword from "./components/ForgotPassword";
+import PrivacyPage from "./pages/PrivacyPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import MyProfilePage from "./pages/MyProfilePage";
+import Loader from "./components/Loader";
+import TermsPage from "./pages/TermsPage";
+import ReturnPage from "./pages/ReturnPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// ✅ 1. REVERSE PROTECTION: Logged-in users can't see Login/Register
+// 1. REVERSE PROTECTION
 const PublicRoute = ({ children }) => {
   const { auth, loading } = useAuth();
-
-  if (loading) return null; // Wait for AuthProvider to check storage
-
+  if (loading) return null;
   if (auth?.user) {
     return <Navigate to="/" replace />;
   }
-
   return children;
 };
 
-// ✅ 2. ROLE PROTECTION: Only Admins/Managers can see Dashboard
+// 2. ROLE PROTECTION
 const ProtectDashboard = ({ children }) => {
   const { auth, loading } = useAuth();
-
-  if (loading) return null; // Prevents "flashing" or wrong redirects on refresh
-
+  if (loading) return null;
   if (!auth?.user) {
     return <Navigate to="/login" replace />;
   }
-
   const userRole = auth.user?.role?.rolename?.toLowerCase().trim();
-
-  // If they are just a "user", kick them to Home
   if (userRole === "user") {
     return <Navigate to="/" replace />;
   }
-
   return children;
 };
 
 function App() {
-  // ✅ Get the current URL path
   const location = useLocation();
-
-  // ✅ Check if we are on the dashboard
   const isDashboard = location.pathname.startsWith("/dashboard");
 
   return (
     <>
+      {/* ✅ THE FIX IS HERE: 
+        This says "If the URL path is exactly '/', render the Loader. 
+        Otherwise, don't even put it on the screen." 
+      */}
+      {location.pathname === "/" && <Loader />}
+
       <ScrollToTop />
+
       <Routes>
         <Route path="/" element={<Home />} />
-
-        {/* ✅ Wrapped Login & Register with PublicRoute */}
         <Route
           path="/login"
           element={
@@ -100,8 +98,11 @@ function App() {
         <Route path="/aboutus" element={<AboutUsPage />} />
         <Route path="/orders" element={<OrderHistoryPage />} />
         <Route path="/profile" element={<MyProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/privacy-policy" element={<PrivacyPage />} />
+        <Route path="/terms-conditions" element={<TermsPage />} />
+        <Route path="/return-policy" element={<ReturnPage />} />
 
-        {/* ✅ Protected Dashboard Route */}
         <Route
           path="/dashboard"
           element={
@@ -110,12 +111,7 @@ function App() {
             </ProtectDashboard>
           }
         />
-
-        <Route path="*" element={<PageNotFoundPage />} />
       </Routes>
-
-      {/* ✅ Conditionally render ChatBot ONLY if we are NOT on the dashboard */}
-      {!isDashboard && <ChatBot />}
     </>
   );
 }

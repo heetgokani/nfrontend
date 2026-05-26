@@ -14,7 +14,7 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -99,7 +99,7 @@ const Header = () => {
         const filtered = res.data.filter(
           (p) =>
             p.title?.toLowerCase().includes(localSearchQuery.toLowerCase()) &&
-            p.status !== "Inactive"
+            p.status !== "Inactive",
         );
         setPreviewResults(filtered.slice(0, 5));
       } catch (err) {
@@ -127,12 +127,12 @@ const Header = () => {
       <span>
         {parts.map((part, index) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <strong key={index} style={{ color: "#de433f", fontWeight: "800" }}>
+            <strong key={index} style={{ color: "#3c7d24", fontWeight: "800" }}>
               {part}
             </strong>
           ) : (
             part
-          )
+          ),
         )}
       </span>
     );
@@ -170,7 +170,10 @@ const Header = () => {
     const title = item.product?.title || "Unknown Product";
     const img = item.variant?.images?.[0] || item.product?.thumbnail || "";
     const displayImg = img.startsWith("http") ? img : `${API_URL}${img}`;
-    const price = item.variant?.price || item.product?.price || 0;
+    const price =
+      item.variant?.discountPrice > 0
+        ? item.variant.discountPrice
+        : item.variant?.price || item.product?.price || 0;
 
     return (
       <div
@@ -195,7 +198,7 @@ const Header = () => {
             {title}
           </p>
           <p className="m-0 text-muted" style={{ fontSize: "12px" }}>
-            {item.quantity ? `${item.quantity} x ` : ""} ₹{price}
+            {item.quantity ? `${item.quantity} x ` : ""} ₹{price.toFixed(2)}
           </p>
         </div>
       </div>
@@ -205,85 +208,6 @@ const Header = () => {
   return (
     <>
       <ToastContainer position="top-right" autoClose={2000} />
-
-      {/* --- ANNOUNCEMENT BAR --- */}
-      <div
-        style={{
-          backgroundColor: "#de433f",
-          padding: "10px 0",
-          position: "relative",
-          zIndex: 1201,
-        }}
-      >
-        <div className="container">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              color: "#fff",
-            }}
-          >
-            <div className="d-lg-block d-none" style={{ flex: 1 }}>
-              <a
-                href="tel:+1-078-2376"
-                style={{
-                  color: "#fff",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                }}
-              >
-                Call: +1 078 2376
-              </a>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                textAlign: "center",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              These is demo website
-            </div>
-            <div
-              className="d-lg-block d-none"
-              style={{ flex: 1, textAlign: "right" }}
-            >
-              {user ? (
-                <span style={{ fontSize: "14px" }}>
-                  Hi, {user.name} |{" "}
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#fff",
-                      fontWeight: "700",
-                      padding: 0,
-                      cursor: "pointer",
-                      display: "inline-block",
-                    }}
-                  >
-                    Logout
-                  </button>
-                </span>
-              ) : (
-                <NavLink
-                  to="/login"
-                  style={{
-                    color: "#fff",
-                    textDecoration: "none",
-                    fontSize: "14px",
-                  }}
-                >
-                  Login
-                </NavLink>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* --- MAIN HEADER --- */}
       <header
@@ -295,16 +219,22 @@ const Header = () => {
           borderBottom: "1px solid #eee",
         }}
       >
-        <div className="header-bottom py-3">
+        <div
+          className="header-bottom"
+          style={{ padding: isMobile ? "12px 0" : "10px 0" }}
+        >
           <div className="container">
             <div className="row align-items-center">
               <div className="col-lg-3 col-4">
                 <NavLink to="/" className="header-logo">
-                  {/* RESPONSIVE LOGO SIZE */}
                   <img
-                    src="/assets/img/swlogo.webp"
+                    src="/assets/img/logo.png"
                     alt="logo"
-                    style={{ maxWidth: isMobile ? "120px" : "180px" }}
+                    style={{
+                      maxHeight: isMobile ? "55px" : "60px",
+                      width: "auto",
+                      objectFit: "contain",
+                    }}
                   />
                 </NavLink>
               </div>
@@ -347,7 +277,6 @@ const Header = () => {
               </div>
 
               <div className="col-lg-3 col-8">
-                {/* FLEX FIX TO ENSURE ALL ICONS FIT ON ONE LINE */}
                 <div
                   className="header-action d-flex align-items-center justify-content-end gap-2 gap-md-3"
                   style={{ position: "relative" }}
@@ -360,17 +289,16 @@ const Header = () => {
                     }}
                     style={{ cursor: "pointer", padding: "5px", color: "#333" }}
                   >
-                    <FiSearch size={isMobile ? 20 : 22} />
+                    <FiSearch size={isMobile ? 22 : 22} />
                   </button>
 
-                  {/* WISHLIST ICON - NOW VISIBLE ON MOBILE TOO */}
                   <div className="position-relative" ref={wishlistRef}>
                     <button
                       className="header-icon btn-reset"
                       onClick={() => setIsWishlistOpen(!isWishlistOpen)}
                       style={{ padding: "5px", position: "relative" }}
                     >
-                      <FiHeart size={isMobile ? 20 : 22} />
+                      <FiHeart size={isMobile ? 22 : 22} />
                       {wishlistItems.length > 0 && (
                         <span className="icon-badge">
                           {wishlistItems.length}
@@ -407,7 +335,8 @@ const Header = () => {
                               style={{
                                 fontSize: "12px",
                                 borderRadius: "50px",
-                                backgroundColor: "#de433f",
+                                backgroundColor: "#3c7d24",
+                                border: "none",
                               }}
                             >
                               View Full Wishlist
@@ -418,14 +347,13 @@ const Header = () => {
                     )}
                   </div>
 
-                  {/* CART ICON WITH BADGE & DROPDOWN */}
                   <div className="position-relative" ref={cartRef}>
                     <button
                       className="header-icon btn-reset"
                       onClick={() => setIsCartOpen(!isCartOpen)}
                       style={{ padding: "5px", position: "relative" }}
                     >
-                      <FiShoppingCart size={isMobile ? 20 : 22} />
+                      <FiShoppingCart size={isMobile ? 22 : 22} />
                       {cartItems.length > 0 && (
                         <span className="icon-badge">{cartItems.length}</span>
                       )}
@@ -456,11 +384,11 @@ const Header = () => {
                                 setIsCartOpen(false);
                                 navigate("/cart");
                               }}
-                              className="btn btn-dark w-100 mt-2 py-2"
+                              className="btn btn-dark w-100 mt-2 py-2 text-white"
                               style={{
                                 fontSize: "12px",
                                 borderRadius: "50px",
-                                backgroundColor: "#de433f",
+                                backgroundColor: "#3c7d24",
                                 border: "none",
                               }}
                             >
@@ -472,7 +400,6 @@ const Header = () => {
                     )}
                   </div>
 
-                  {/* USER ICON */}
                   <button
                     className="header-user-trigger btn-reset header-icon"
                     onClick={() =>
@@ -480,7 +407,7 @@ const Header = () => {
                     }
                     style={{ padding: "5px" }}
                   >
-                    <FiUser size={isMobile ? 20 : 24} />
+                    <FiUser size={isMobile ? 22 : 24} />
                   </button>
 
                   <button
@@ -488,11 +415,11 @@ const Header = () => {
                     onClick={() => setIsSidebarOpen(true)}
                   >
                     <svg
-                      width={isMobile ? "20" : "24"}
-                      height={isMobile ? "20" : "24"}
+                      width={isMobile ? "22" : "24"}
+                      height={isMobile ? "22" : "24"}
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="#000"
+                      stroke="#333"
                       strokeWidth="2"
                     >
                       <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -505,7 +432,7 @@ const Header = () => {
             </div>
           </div>
 
-          {/* SEARCH OVERLAY (Unchanged) */}
+          {/* SEARCH OVERLAY */}
           <div
             ref={searchRef}
             style={{
@@ -610,8 +537,12 @@ const Header = () => {
                               {highlightMatch(item.title, localSearchQuery)}
                             </h6>
                             <p
-                              className="m-0 text-danger"
-                              style={{ fontWeight: "700", fontSize: "12px" }}
+                              className="m-0"
+                              style={{
+                                fontWeight: "700",
+                                fontSize: "12px",
+                                color: "#3c7d24",
+                              }}
                             >
                               {displayPrice
                                 ? `₹${displayPrice}`
@@ -630,7 +561,7 @@ const Header = () => {
                     className="text-center pt-2 border-top"
                     style={{
                       cursor: "pointer",
-                      color: "#de433f",
+                      color: "#3c7d24",
                       fontWeight: "bold",
                       fontSize: "12px",
                     }}
@@ -648,7 +579,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* --- MOBILE NAVIGATION SIDEBAR (Unchanged) --- */}
+      {/* --- MOBILE NAVIGATION SIDEBAR --- */}
       <div
         style={{
           position: "fixed",
@@ -656,9 +587,11 @@ const Header = () => {
           left: 0,
           width: "100%",
           height: "100%",
-          background: "rgba(0,0,0,0.5)",
+          background: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(3px)",
           zIndex: 2400,
           display: isSidebarOpen ? "block" : "none",
+          transition: "opacity 0.3s",
         }}
         onClick={() => setIsSidebarOpen(false)}
       ></div>
@@ -671,27 +604,35 @@ const Header = () => {
           width: "300px",
           height: "100%",
           zIndex: 2500,
-          transition: "0.4s",
+          transition: "0.4s cubic-bezier(0.25, 0.8, 0.25, 1)",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
+          boxShadow: "5px 0 25px rgba(0,0,0,0.1)",
         }}
       >
-        <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
+        <div
+          className="p-3 border-bottom d-flex justify-content-between align-items-center"
+          style={{ backgroundColor: "#fcfcfc" }}
+        >
           <img
-            src="/assets/img/swlogo.webp"
+            src="/assets/img/logo.png"
             alt="logo"
-            style={{ maxWidth: "120px" }}
+            style={{ maxHeight: "50px", width: "auto", objectFit: "contain" }}
           />
-          <button className="btn-reset" onClick={() => setIsSidebarOpen(false)}>
+          <button
+            className="btn-reset close-btn-hover"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             <FiX size={24} />
           </button>
         </div>
-        <div className="p-4 flex-grow-1 overflow-auto">
-          <ul className="list-unstyled m-0">
+
+        <div className="flex-grow-1 overflow-auto py-2">
+          <ul className="list-unstyled m-0 mobile-menu-list">
             {["Home", "Shop", "About Us", "Wishlist", "FAQ", "Contact"].map(
               (link) => (
-                <li className="mb-4" key={link}>
+                <li key={link}>
                   <NavLink
                     to={`/${
                       link.toLowerCase().replace(" ", "") === "home"
@@ -704,17 +645,18 @@ const Header = () => {
                     {link}
                   </NavLink>
                 </li>
-              )
+              ),
             )}
           </ul>
         </div>
-        <div className="p-4 border-top">
+
+        <div className="p-4 border-top" style={{ backgroundColor: "#f9fbf9" }}>
           {user ? (
             <div
               onClick={handleLogout}
               style={{
-                color: "#de433f",
-                fontWeight: "700",
+                color: "#d32f2f",
+                fontWeight: "600",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
@@ -726,9 +668,15 @@ const Header = () => {
           ) : (
             <NavLink
               to="/login"
-              className="sidebar-link"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                color: "#3c7d24",
+                fontWeight: "600",
+                textDecoration: "none",
+              }}
               onClick={() => setIsSidebarOpen(false)}
-              style={{ display: "flex", alignItems: "center", gap: "12px" }}
             >
               <FiLogIn size={20} /> Login / Register
             </NavLink>
@@ -736,7 +684,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* --- USER ACCOUNT RIGHT SIDEBAR (Unchanged) --- */}
+      {/* --- USER ACCOUNT RIGHT SIDEBAR --- */}
       <div
         style={{
           position: "fixed",
@@ -744,9 +692,11 @@ const Header = () => {
           left: 0,
           width: "100%",
           height: "100%",
-          background: "rgba(0,0,0,0.5)",
+          background: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(3px)",
           zIndex: 2600,
           display: isUserSidebarOpen ? "block" : "none",
+          transition: "opacity 0.3s",
         }}
         onClick={() => setIsUserSidebarOpen(false)}
       ></div>
@@ -759,27 +709,30 @@ const Header = () => {
           width: "300px",
           height: "100%",
           zIndex: 2700,
-          transition: "0.4s",
+          transition: "0.4s cubic-bezier(0.25, 0.8, 0.25, 1)",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "-5px 0 15px rgba(0,0,0,0.1)",
+          boxShadow: "-5px 0 25px rgba(0,0,0,0.1)",
         }}
       >
         <div
           className="p-4 border-bottom d-flex justify-content-between align-items-center"
-          style={{ backgroundColor: "#f8f9fa" }}
+          style={{ backgroundColor: "#fcfcfc" }}
         >
           <div className="d-flex align-items-center gap-3">
             <div
-              className="bg-light rounded-circle d-flex align-items-center justify-content-center"
+              className="d-flex align-items-center justify-content-center"
               style={{
-                width: "40px",
-                height: "40px",
-                border: "1px solid #ddd",
+                width: "45px",
+                height: "45px",
+                borderRadius: "50%",
+                backgroundColor: "#3c7d24",
+                color: "#fff",
+                boxShadow: "0 4px 10px rgba(60, 125, 36, 0.2)",
               }}
             >
-              <FiUser size={20} color="#555" />
+              <FiUser size={22} />
             </div>
             <div>
               <span
@@ -791,7 +744,7 @@ const Header = () => {
                   letterSpacing: "1px",
                 }}
               >
-                Hello,
+                Welcome back,
               </span>
               <strong style={{ fontSize: "16px", color: "#111" }}>
                 {user?.name || "Guest"}
@@ -799,16 +752,16 @@ const Header = () => {
             </div>
           </div>
           <button
-            className="btn-reset"
+            className="btn-reset close-btn-hover"
             onClick={() => setIsUserSidebarOpen(false)}
-            style={{ color: "#888" }}
           >
             <FiX size={24} />
           </button>
         </div>
-        <div className="p-4 flex-grow-1">
+
+        <div className="flex-grow-1 overflow-auto py-2">
           <ul className="list-unstyled m-0 user-sidebar-list">
-            <li className="mb-4">
+            <li>
               <NavLink
                 to="/profile"
                 className="user-sidebar-link"
@@ -817,7 +770,7 @@ const Header = () => {
                 <FiUser size={18} className="me-3" /> My Profile
               </NavLink>
             </li>
-            <li className="mb-4">
+            <li>
               <NavLink
                 to="/wishlist"
                 className="user-sidebar-link"
@@ -826,7 +779,7 @@ const Header = () => {
                 <FiHeart size={18} className="me-3" /> Wishlist
               </NavLink>
             </li>
-            <li className="mb-4">
+            <li>
               <NavLink
                 to="/cart"
                 className="user-sidebar-link"
@@ -835,7 +788,7 @@ const Header = () => {
                 <FiShoppingCart size={18} className="me-3" /> Cart
               </NavLink>
             </li>
-            <li className="mb-4">
+            <li>
               <NavLink
                 to="/orders"
                 className="user-sidebar-link"
@@ -846,18 +799,18 @@ const Header = () => {
             </li>
           </ul>
         </div>
-        <div className="p-4 border-top">
+
+        <div className="p-4 border-top" style={{ backgroundColor: "#f9fbf9" }}>
           <button
             onClick={handleLogout}
             className="btn-reset w-100 d-flex align-items-center"
             style={{
-              color: "#de433f",
+              color: "#d32f2f",
               fontSize: "16px",
               fontWeight: "600",
-              padding: "10px 0",
             }}
           >
-            <FiLogOut size={18} className="me-3" /> Logout
+            <FiLogOut size={18} className="me-3" /> Logout safely
           </button>
         </div>
       </div>
@@ -865,19 +818,77 @@ const Header = () => {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        .btn-reset { background: none; border: none; padding: 0; outline: none; cursor: pointer; display: flex; align-items: center; }
-        .clickable-link { display: inline-block; padding: 5px 15px; color: #000; transition: 0.3s; text-decoration: none !important; }
-        .clickable-link:hover, .clickable-link.active { color: #de433f !important; }
+        .btn-reset { background: none; border: none; padding: 0; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* ADJUSTED HOVER LINE ANIMATION AND SPACING */
+        .clickable-link { 
+          display: inline-block; 
+          padding-bottom: 8px; /* Pushes the line down away from the text */
+          color: #111; 
+          transition: 0.3s; 
+          text-decoration: none !important; 
+          position: relative;
+          font-weight: 500;
+        }
+        .clickable-link::after { 
+          content: ''; 
+          position: absolute; 
+          width: 0; 
+          height: 2px; 
+          bottom: 0; /* Aligns to the bottom of the padding */
+          left: 0; 
+          background-color: #3c7d24; 
+          transition: width 0.3s ease; 
+        }
+        .clickable-link:hover::after, .clickable-link.active::after { 
+          width: 100%; 
+        }
+        .clickable-link:hover, .clickable-link.active { 
+          color: #3c7d24 !important; 
+        }
+
         .header-icon { color: #333 !important; text-decoration: none !important; transition: 0.3s; }
-        .header-icon:hover { color: #de433f !important; }
-        .sidebar-link { font-size: 18px; color: #000; text-decoration: none; font-weight: 600; display: block; }
-        .sidebar-link.active { color: #de433f !important; }
-        .user-sidebar-link { font-size: 16px; color: #333; text-decoration: none; font-weight: 500; display: flex; align-items: center; transition: 0.3s; }
-        .user-sidebar-link:hover { color: #de433f; padding-left: 5px; }
+        .header-icon:hover { color: #3c7d24 !important; }
         
         /* DROPDOWN & BADGE STYLES */
-        .icon-badge { position: absolute; top: -2px; right: -6px; background-color: #de433f; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; font-weight: bold; line-height: 1; }
+        .icon-badge { position: absolute; top: -2px; right: -6px; background-color: #3c7d24; color: white; border-radius: 50%; padding: 2px 5px; font-size: 9px; font-weight: bold; line-height: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.15); border: 2px solid #fff; }
         .dropdown-box { position: absolute; top: calc(100% + 15px); right: -50px; width: 280px; background: #fff; border-radius: 12px; padding: 15px; z-index: 2000; }
+        
+        /* NEW POLISHED SIDEBAR STYLES */
+        .close-btn-hover {
+          width: 38px; height: 38px; border-radius: 50%; color: #555; transition: all 0.3s ease;
+        }
+        .close-btn-hover:hover {
+          background-color: #f0f5f0; color: #3c7d24; transform: scale(1.05);
+        }
+
+        .mobile-menu-list li {
+          border-bottom: 1px solid #f2f2f2;
+        }
+        .mobile-menu-list li:last-child {
+          border-bottom: none;
+        }
+        .sidebar-link { 
+          font-size: 16px; color: #222; text-decoration: none; font-weight: 600; display: block; 
+          padding: 16px 24px; transition: all 0.3s ease; border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover, .sidebar-link.active { 
+          color: #3c7d24 !important; background-color: #f4f8f4; border-left: 3px solid #3c7d24;
+        }
+
+        .user-sidebar-list li {
+          border-bottom: 1px solid #f2f2f2;
+        }
+        .user-sidebar-list li:last-child {
+          border-bottom: none;
+        }
+        .user-sidebar-link { 
+          font-size: 15px; color: #333; text-decoration: none; font-weight: 500; display: flex; align-items: center; 
+          transition: all 0.3s; padding: 16px 24px; border-left: 3px solid transparent;
+        }
+        .user-sidebar-link:hover { 
+          color: #3c7d24; background-color: #f4f8f4; border-left: 3px solid #3c7d24; padding-left: 28px;
+        }
         
         /* MOBILE TWEAKS */
         @media (max-width: 768px) {

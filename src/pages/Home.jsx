@@ -8,17 +8,18 @@ import FeaturedCollection from "../components/FeaturedCollection";
 import Newsletter from "../components/Newsletter";
 import InstagramSection from "../components/InstagramSection";
 import NikeProducts from "../components/NikeProducts";
+import FeatureIntro from "../components/FeatureIntro";
+import HeroSection from "../components/HeroSection";
+import OurFarming from "../components/OurFarming";
+import RandomFeaturedProducts from "../components/RandomFeaturedProducts";
 const Home = () => {
   return (
     <div>
       <Header />
-      <HomeBanner />
-      <ThreeBanner />
-
-      <FeaturedCollection />
-      <NikeProducts />
-      <InstagramSection />
-
+      <HeroSection />
+      <FeatureIntro />
+      <OurFarming />
+      <RandomFeaturedProducts />
       <Footer />
     </div>
   );

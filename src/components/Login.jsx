@@ -1,14 +1,11 @@
 import React, { useState, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
-  const brandRed = "#de433f";
-  const pureBlack = "#000000";
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -29,30 +26,24 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "https://demo-backend-k0yn.onrender.com/api/user/login",
+        "http://localhost:5000/api/user/login",
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (response.status === 200) {
-        // 1. Destructure correctly based on backend response
         const user = response.data.data.user;
         const token = response.data.token;
 
-        // 2. Update Context & LocalStorage
         login(user, token);
         toast.success("Login Successful!!");
 
-        // 3. Logic: Redirect based on Role
-        // Safe check using optional chaining (?.)
         const userRole = user?.role?.rolename?.toLowerCase().trim();
 
         setTimeout(() => {
           if (userRole === "user") {
-            // Normal customers go to Home
             navigate("/");
           } else {
-            // Admin, Superadmin, Manager go to Dashboard
             navigate("/dashboard");
           }
         }, 1500);
@@ -66,29 +57,27 @@ const Login = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+    <div className="premium-organic-wrapper">
       <ToastContainer position="top-right" autoClose={3000} />
-      {/* ... (Rest of your UI code remains exactly the same) ... */}
 
-      {/* Keeping your exact UI structure below for completeness */}
-      <div
-        className="breadcrumb d-none d-md-block"
-        style={{ padding: "15px 0", background: "#f9f9f9", border: "none" }}
-      >
-        <div className="container">
-          <ul
-            className="list-unstyled d-flex align-items-center m-0"
-            style={{ fontSize: "14px" }}
-          >
+      {/* Ambient Animated Background Elements */}
+      <div className="ambient-shape shape-1"></div>
+      <div className="ambient-shape shape-2"></div>
+      <div className="ambient-shape shape-3"></div>
+
+      {/* Navigation / Breadcrumb */}
+      <div className="breadcrumb-wrapper d-none d-md-block">
+        <div className="universal-container">
+          <ul className="list-unstyled d-flex align-items-center m-0 breadcrumb-list">
             <li>
-              <NavLink to="/" style={{ color: "#000", textDecoration: "none" }}>
+              <NavLink to="/" className="breadcrumb-link">
                 Home
               </NavLink>
             </li>
             <li className="d-flex align-items-center">
-              <span style={{ margin: "0 10px", opacity: 0.5 }}>/</span>
+              <span className="breadcrumb-divider">/</span>
             </li>
-            <li style={{ color: "#777" }}>Login</li>
+            <li className="breadcrumb-current">Login</li>
           </ul>
         </div>
       </div>
@@ -98,16 +87,17 @@ const Login = () => {
           <div className="row justify-content-center">
             <div className="col-lg-5 col-md-7 col-12 p-0 p-md-3">
               <div className="login-card">
-                <div className="text-center mb-4">
-                  <h2 className="login-title">LOGIN</h2>
-                  <div className="red-divider"></div>
+                <div className="text-center mb-5">
+                  {/* UPDATED: Elegant, curved flowing typography */}
+                  <h2 className="login-title">Welcome Back</h2>
+                  <div className="organic-divider"></div>
                   <p className="login-subtitle">
-                    Enter your credentials to access your stash.
+                    Enter your credentials to access your organic stash.
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
+                  <div className="input-group-animated mb-4">
                     <label className="input-label">EMAIL ADDRESS</label>
                     <input
                       type="email"
@@ -118,20 +108,14 @@ const Login = () => {
                       onChange={handleChange}
                       required
                     />
+                    <span className="focus-border"></span>
                   </div>
 
-                  <div className="mb-4">
-                    <div className="d-flex justify-content-between">
-                      <label className="input-label">PASSWORD</label>
-                      <NavLink
-                        to="/forgot-password"
-                        style={{
-                          color: brandRed,
-                          fontSize: "12px",
-                          textDecoration: "none",
-                        }}
-                      >
-                        Forgot?
+                  <div className="input-group-animated mb-5">
+                    <div className="d-flex justify-content-between align-items-end mb-2">
+                      <label className="input-label mb-0">PASSWORD</label>
+                      <NavLink to="/forgot-password" className="forgot-link">
+                        Forgot Password?
                       </NavLink>
                     </div>
                     <input
@@ -143,6 +127,7 @@ const Login = () => {
                       onChange={handleChange}
                       required
                     />
+                    <span className="focus-border"></span>
                   </div>
 
                   <button
@@ -150,30 +135,18 @@ const Login = () => {
                     className="login-btn-main"
                     disabled={loading}
                   >
-                    {loading ? "AUTHENTICATING..." : "SIGN IN"}
+                    <span className="btn-text">
+                      {loading ? "AUTHENTICATING..." : "SIGN IN"}
+                    </span>
+                    {!loading && <span className="btn-arrow">→</span>}
                   </button>
                 </form>
 
-                <div className="separator">
-                  <span>OR CONTINUE WITH</span>
-                </div>
-                <button className="google-btn">
-                  <FcGoogle size={22} />
-                  <span>Google Account</span>
-                </button>
-
-                <div className="text-center mt-5">
+                <div className="text-center mt-5 pt-4 footer-section">
                   <p className="no-account">
-                    NEW TO SNEAKERSWALA?{" "}
-                    <NavLink
-                      to="/register"
-                      style={{
-                        color: brandRed,
-                        fontWeight: "800",
-                        textDecoration: "none",
-                      }}
-                    >
-                      JOIN NOW
+                    DON'T HAVE AN ACCOUNT?{" "}
+                    <NavLink to="/register" className="create-account-link">
+                      Create Now
                     </NavLink>
                   </p>
                 </div>
@@ -183,34 +156,336 @@ const Login = () => {
         </div>
       </main>
 
-      {/* Re-injecting your CSS */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .login-container { padding: 80px 0; }
-        .login-card { background: #fff; padding: 50px 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(222, 67, 63, 0.15); border-top: 5px solid ${brandRed}; }
-        .login-title { font-weight: 900; letter-spacing: 2px; color: ${pureBlack}; font-size: 32px; margin-bottom: 5px; }
-        .red-divider { width: 50px; height: 4px; background: ${brandRed}; margin: 10px auto 20px; }
-        .login-subtitle { color: #888; font-size: 14px; }
-        .input-label { display: block; font-weight: 800; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; color: ${pureBlack}; }
-        .custom-input { width: 100%; padding: 14px 20px; background: #f8f8f8; border: 2px solid #f8f8f8; border-radius: 10px; font-size: 14px; transition: 0.3s; outline: none; }
-        .custom-input:focus { border-color: ${brandRed}; background: #fff; }
-        .login-btn-main { width: 100%; padding: 16px; background: ${brandRed}; color: #fff; border: none; border-radius: 10px; font-weight: 900; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 10px 20px rgba(222, 67, 63, 0.3); }
-        .login-btn-main:hover { background: ${pureBlack}; transform: translateY(-3px); }
-        .login-btn-main:disabled { background: #ccc; cursor: not-allowed; }
-        .separator { text-align: center; margin: 30px 0; position: relative; }
-        .separator span { background: #fff; padding: 0 15px; color: #bbb; font-size: 10px; font-weight: 700; position: relative; z-index: 2; }
-        .separator::after { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #eee; z-index: 1; }
-        .google-btn { width: 100%; padding: 14px; background: #fff; border: 2px solid #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 14px; transition: 0.3s; }
-        .google-btn:hover { background: #fafafa; border-color: #ddd; }
-        .no-account { font-size: 12px; font-weight: 700; color: #777; letter-spacing: 0.5px; }
-        @media (max-width: 767px) {
-          .login-container { padding: 0; }
-          .login-card { padding: 40px 25px; border-radius: 0; min-height: 100vh; border-top: none; }
+      <style>
+        {`
+        /* Core Brand Variables */
+        :root {
+          --local-green-dark: var(--green-dark, #1f4212);
+          --local-green-medium: var(--green-medium, #407e18);
+          --local-green-light: var(--green-light, #e8f3e8);
+          --local-bg-off-white: var(--bg-off-white, #f9fbf9);
+          --local-text-main: var(--text-main, #1a201a);
+          --local-text-muted: var(--text-muted, #5a6b5a);
+          --local-font-sans: var(--font-sans, "Poppins", sans-serif);
+          --local-font-serif: var(--font-serif, "Playfair Display", serif);
         }
-      `,
-        }}
-      />
+
+        /* --- WRAPPER & ANIMATED BACKGROUND --- */
+        .premium-organic-wrapper {
+          position: relative;
+          min-height: 100vh;
+          background-color: var(--local-bg-off-white);
+          overflow: hidden;
+          font-family: var(--local-font-sans);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ambient-shape {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(70px);
+          z-index: 0;
+          opacity: 0.45;
+          animation: floatShape 15s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        .shape-1 {
+          width: 450px;
+          height: 450px;
+          background: rgba(64, 126, 24, 0.15); 
+          top: -10%;
+          left: -5%;
+        }
+
+        .shape-2 {
+          width: 550px;
+          height: 550px;
+          background: rgba(186, 219, 173, 0.25); 
+          bottom: -15%;
+          right: -10%;
+          animation-delay: -5s;
+          animation-duration: 20s;
+        }
+
+        .shape-3 {
+          width: 300px;
+          height: 300px;
+          background: rgba(212, 160, 55, 0.08); 
+          top: 40%;
+          left: 60%;
+          animation-delay: -2s;
+          animation-duration: 18s;
+        }
+
+        @keyframes floatShape {
+          0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+          50% { transform: translate(40px, 30px) scale(1.05) rotate(10deg); }
+          100% { transform: translate(-20px, 50px) scale(0.95) rotate(-5deg); }
+        }
+
+        /* --- BREADCRUMBS --- */
+        .breadcrumb-wrapper {
+          padding: 20px 0;
+          position: relative;
+          z-index: 10;
+        }
+
+        .breadcrumb-list {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          font-weight: 500;
+        }
+
+        .breadcrumb-link {
+          color: var(--local-text-main);
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+        
+        .breadcrumb-link:hover {
+          color: var(--local-green-medium);
+        }
+
+        .breadcrumb-divider {
+          margin: 0 12px;
+          color: var(--local-text-muted);
+          opacity: 0.4;
+        }
+
+        .breadcrumb-current {
+          color: var(--local-text-muted);
+          font-weight: 400;
+        }
+
+        /* --- CARD & GLASSMORPHISM --- */
+        .login-container { 
+          padding: 40px 0 100px; 
+          position: relative;
+          z-index: 2;
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+        }
+        
+        .login-card { 
+          background: rgba(255, 255, 255, 0.75); 
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          padding: 60px 50px; 
+          border-radius: 24px; 
+          box-shadow: 0 24px 48px rgba(31, 66, 18, 0.06); 
+          
+          opacity: 0;
+          transform: translateY(30px);
+          animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ELEGANT CURVED TYPOGRAPHY --- */
+        .login-title { 
+          font-family: var(--local-font-serif);
+          font-style: italic; /* Creates the beautiful curved look */
+          font-weight: 500; 
+          font-size: 42px; 
+          margin-bottom: 12px; 
+          letter-spacing: 0.5px;
+          
+          /* Organic gradient fill */
+          background: linear-gradient(135deg, var(--local-green-dark) 0%, var(--local-green-medium) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 6px 15px rgba(64, 126, 24, 0.12);
+        }
+        
+        .organic-divider { 
+          width: 0px; 
+          height: 2px; 
+          background: linear-gradient(90deg, var(--local-green-medium) 0%, transparent 100%);
+          margin: 0 auto 20px; 
+          animation: growLine 1s ease-out 0.6s forwards;
+        }
+
+        @keyframes growLine {
+          to { width: 60px; }
+        }
+        
+        .login-subtitle { 
+          color: var(--local-text-muted); 
+          font-size: 14px; 
+          font-weight: 300;
+          letter-spacing: 0.3px;
+          opacity: 0;
+          animation: fadeIn 1s ease-out 0.8s forwards;
+        }
+
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+
+        /* --- ANIMATED INPUTS --- */
+        .input-group-animated {
+          position: relative;
+        }
+
+        .input-label { 
+          display: block; 
+          font-weight: 600; 
+          font-size: 11px; 
+          letter-spacing: 1.5px; 
+          margin-bottom: 8px; 
+          color: var(--local-text-main); 
+        }
+        
+        .custom-input { 
+          width: 100%; 
+          padding: 12px 0; 
+          background: transparent; 
+          border: none;
+          border-bottom: 1px solid rgba(0,0,0,0.1);
+          border-radius: 0; 
+          font-size: 15px; 
+          font-family: var(--local-font-sans);
+          color: var(--local-text-main);
+          transition: 0.3s ease; 
+          outline: none; 
+        }
+        
+        .custom-input::placeholder {
+          color: #aebfab;
+          font-weight: 300;
+        }
+
+        .focus-border {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background-color: var(--local-green-medium);
+          transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .custom-input:focus ~ .focus-border {
+          width: 100%;
+          left: 0;
+        }
+        
+        .forgot-link {
+          color: var(--local-green-medium);
+          font-size: 12px;
+          font-family: var(--local-font-sans);
+          text-decoration: none;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+          transition: all 0.3s ease;
+        }
+
+        .forgot-link:hover {
+          color: var(--local-green-dark);
+          text-shadow: 0 2px 8px rgba(64, 126, 24, 0.3);
+        }
+
+        /* --- PREMIUM BUTTON --- */
+        .login-btn-main { 
+          width: 100%; 
+          padding: 18px; 
+          background: var(--local-green-dark); 
+          color: #fff; 
+          border: none; 
+          border-radius: 8px; 
+          font-weight: 500; 
+          letter-spacing: 2.5px; 
+          font-size: 13px;
+          text-transform: uppercase;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 15px rgba(31, 66, 18, 0.15);
+        }
+        
+        .login-btn-main:hover:not(:disabled) { 
+          background: var(--local-green-medium); 
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(31, 66, 18, 0.25);
+        }
+
+        .btn-arrow {
+          font-size: 16px;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .login-btn-main:hover .btn-arrow {
+          transform: translateX(6px);
+        }
+        
+        .login-btn-main:disabled { 
+          background: #c3d0c3; 
+          color: #798a79;
+          cursor: not-allowed; 
+          box-shadow: none;
+        }
+        
+        /* --- FOOTER --- */
+        .footer-section {
+          border-top: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .no-account { 
+          font-size: 12px; 
+          font-weight: 400; 
+          color: var(--local-text-muted); 
+          letter-spacing: 1px; 
+        }
+
+        .create-account-link {
+          color: var(--local-green-dark);
+          font-weight: 700;
+          text-decoration: none;
+          margin-left: 5px;
+          position: relative;
+        }
+
+        .create-account-link::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          transform: scaleX(0);
+          height: 1.5px;
+          bottom: -2px;
+          left: 0;
+          background-color: var(--local-green-medium);
+          transform-origin: bottom right;
+          transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+
+        .create-account-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: bottom left;
+        }
+        
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 767px) {
+          .login-container { padding: 20px 15px; align-items: flex-start; }
+          .login-card { 
+            padding: 40px 25px; 
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.85); 
+          }
+          .login-title { font-size: 34px; }
+          .shape-1 { width: 300px; height: 300px; }
+          .shape-2 { width: 350px; height: 350px; }
+        }
+        `}
+      </style>
     </div>
   );
 };

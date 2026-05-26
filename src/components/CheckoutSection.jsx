@@ -3,17 +3,35 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const CheckoutSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
+  const hasZeroPriceItem = cartData.items.some((item) => {
+    const p = item.product || {};
+    const v = item.variant || {};
+    const originalPrice = Number(v.price) || Number(p.price) || 0;
+    let sellingPrice =
+      Number(v.discountPrice) || Number(p.discountPrice) || originalPrice;
 
+    if (sellingPrice === 0 && originalPrice > 0) {
+      sellingPrice = originalPrice;
+    }
+
+    return sellingPrice <= 0;
+  });
   // --- NEW SHIPPING API STATES ---
   const [allShippingRules, setAllShippingRules] = useState([]);
   const [shippingPrice, setShippingPrice] = useState(0);
-  const [pinError, setPinError] = useState("");
+  const [cityError, setCityError] = useState("");
   const [isShippingAvailable, setIsShippingAvailable] = useState(false);
+
+  // --- CUSTOM DROPDOWN STATES ---
+  const [isShippingCityOpen, setIsShippingCityOpen] = useState(false);
+  const [shippingCitySearch, setShippingCitySearch] = useState("");
+  const [isBillingCityOpen, setIsBillingCityOpen] = useState(false);
+  const [billingCitySearch, setBillingCitySearch] = useState("");
 
   // Form States
   const defaultForm = {
@@ -75,47 +93,33 @@ const CheckoutSection = () => {
     if (savedSameAsShipping) setSameAsShipping(JSON.parse(savedSameAsShipping));
   }, []);
 
-  // --- PINCODE VALIDATION EFFECT ---
+  // --- CITY VALIDATION EFFECT ---
   useEffect(() => {
-    if (
-      shippingForm.zip &&
-      shippingForm.zip.length >= 6 &&
-      allShippingRules.length > 0
-    ) {
+    if (shippingForm.city && allShippingRules.length > 0) {
       const matchedRule = allShippingRules.find(
-        (r) => r.pincode === shippingForm.zip
+        (r) =>
+          r.city?.toLowerCase().trim() ===
+          shippingForm.city.toLowerCase().trim(),
       );
 
       if (matchedRule && matchedRule.isAvailable) {
-        setShippingForm((prev) => ({
-          ...prev,
-          city: matchedRule.city,
-          country: "India",
-        }));
-        if (sameAsShipping) {
-          setBillingForm((prev) => ({
-            ...prev,
-            city: matchedRule.city,
-            country: "India",
-          }));
-        }
         setShippingPrice(matchedRule.shippingPrice);
-        setPinError("");
+        setCityError("");
         setIsShippingAvailable(true);
       } else {
-        if (pinError !== "Shipping not available in this pincode") {
-          setPinError("Shipping not available in this pincode");
-          toast.error("Shipping not available in this pincode");
+        if (cityError !== "Shipping not available in this city") {
+          setCityError("Shipping not available in this city");
+          toast.error("Shipping not available in this city");
         }
         setShippingPrice(0);
         setIsShippingAvailable(false);
       }
     } else {
-      setPinError("");
+      setCityError("");
       setShippingPrice(0);
       setIsShippingAvailable(false);
     }
-  }, [shippingForm.zip, allShippingRules, sameAsShipping]);
+  }, [shippingForm.city, allShippingRules]);
 
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
@@ -139,53 +143,44 @@ const CheckoutSection = () => {
     }
   };
 
-  // --- MATH & GST CALCULATIONS ---
+  // --- CRITICAL FIX: MATH & GST CALCULATIONS BASE ON SELLING PRICE ---
+  // Inside calculateTotals in CheckoutSection.jsx
   const calculateTotals = () => {
     let baseSubtotal = 0;
     let baseSGST = 0;
     let baseCGST = 0;
 
     cartData.items.forEach((item) => {
-      const price = item.variant?.price || item.product?.price || 0;
-      const itemTotalBase = price * item.quantity;
+      // FIX: Always use discountPrice if it exists
+      const sellingPrice =
+        item.variant?.discountPrice > 0
+          ? item.variant.discountPrice
+          : item.variant?.price || item.product?.price || 0;
 
+      const itemTotalBase = sellingPrice * item.quantity;
       const sgstPercentage = item.variant?.sgst || 0;
       const cgstPercentage = item.variant?.cgst || 0;
 
-      const itemSGST = (itemTotalBase * sgstPercentage) / 100;
-      const itemCGST = (itemTotalBase * cgstPercentage) / 100;
-
       baseSubtotal += itemTotalBase;
-      baseSGST += itemSGST;
-      baseCGST += itemCGST;
+      baseSGST += (itemTotalBase * sgstPercentage) / 100;
+      baseCGST += (itemTotalBase * cgstPercentage) / 100;
     });
-
     return { baseSubtotal, baseSGST, baseCGST };
   };
 
   const { baseSubtotal, baseSGST, baseCGST } = calculateTotals();
 
-  // 1. Calculate how much percentage of the cart is discounted
   const discountAmount = appliedCoupon.discountAmount || 0;
   const discountRatio = baseSubtotal > 0 ? discountAmount / baseSubtotal : 0;
-
-  // Cap the ratio at 1 (100%) so we don't get negative taxes
   const safeDiscountRatio = Math.min(discountRatio, 1);
 
-  // 2. Reduce the GST by the exact same ratio as the discount
   const finalSGST = baseSGST * (1 - safeDiscountRatio);
   const finalCGST = baseCGST * (1 - safeDiscountRatio);
-
-  // 3. Dynamic Shipping Price
   const shipping = baseSubtotal > 0 ? shippingPrice : 0;
 
-  // 4. Final Total = (Subtotal - Discount) + Adjusted GST + Shipping
-  const total =
-    Math.max(0, baseSubtotal - discountAmount) +
-    finalSGST +
-    finalCGST +
-    shipping;
-
+  // FIX: Do not add finalSGST and finalCGST to the total.
+  // The price already includes GST (Universal Pricing).
+  const total = Math.max(0, baseSubtotal - discountAmount) + shipping;
   // --- COUPON LOGIC ---
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -195,15 +190,20 @@ const CheckoutSection = () => {
         const pId = item.product?._id || item.product;
         const cId = item.product?.category?._id || item.product?.category;
 
+        // Ensure coupon validation payload uses the exact selling price
+        const sellingPrice =
+          item.variant?.discountPrice > 0
+            ? item.variant.discountPrice
+            : item.variant?.price || item.product?.price || 0;
+
         return {
           productId: pId ? pId.toString() : null,
           categoryId: cId ? cId.toString() : null,
-          price: item.variant?.price || item.product?.price || 0,
+          price: sellingPrice,
           quantity: item.quantity,
         };
       });
 
-      // Send the baseSubtotal so min order checks match the raw product value
       const response = await axios.post(`${API_URL}/api/coupons/validate`, {
         code: promoCode,
         cartItems: formattedCartItems,
@@ -220,7 +220,7 @@ const CheckoutSection = () => {
     } catch (error) {
       setAppliedCoupon({ code: null, discountAmount: 0 });
       toast.error(
-        error.response?.data?.message || "Invalid or expired coupon code."
+        error.response?.data?.message || "Invalid or expired coupon code.",
       );
     }
   };
@@ -231,13 +231,12 @@ const CheckoutSection = () => {
     toast.info("Coupon removed.");
   };
 
-  // --- SAVE BOTH ADDRESSES AND REDIRECT ---
   const handleProceedToShipping = (e) => {
     e.preventDefault();
 
     if (!isShippingAvailable) {
       return toast.error(
-        "Please enter a valid pincode where shipping is available."
+        "Please select a valid City where shipping is available.",
       );
     }
 
@@ -271,8 +270,6 @@ const CheckoutSection = () => {
     localStorage.setItem("shippingAddress", JSON.stringify(shippingForm));
     localStorage.setItem("billingAddress", JSON.stringify(finalBillingForm));
     localStorage.setItem("sameAsShipping", JSON.stringify(sameAsShipping));
-
-    // Save the REDUCED GST to database
     localStorage.setItem(
       "checkoutTotals",
       JSON.stringify({
@@ -283,11 +280,15 @@ const CheckoutSection = () => {
         discountAmount: appliedCoupon.discountAmount,
         totalPrice: total,
         couponCodeApplied: appliedCoupon.code,
-      })
+      }),
     );
 
     window.location.href = "/shipping";
   };
+
+  const availableCities = Array.from(
+    new Set(allShippingRules.filter((r) => r.isAvailable).map((r) => r.city)),
+  );
 
   return (
     <>
@@ -339,7 +340,7 @@ const CheckoutSection = () => {
                 />
               </svg>
             </li>
-            <li style={{ color: "#de433f", fontWeight: "600" }}>Checkout</li>
+            <li style={{ color: " #407e18", fontWeight: "600" }}>Checkout</li>
           </ul>
         </div>
       </div>
@@ -349,7 +350,6 @@ const CheckoutSection = () => {
           <div className="container">
             <div className="checkout-page-wrapper">
               <div className="row">
-                {/* --- LEFT FORM SECTION --- */}
                 <div className="col-xl-9 col-lg-8 col-md-12 col-12">
                   <div className="section-header mb-3">
                     <h2 className="section-heading">Check out</h2>
@@ -434,20 +434,7 @@ const CheckoutSection = () => {
                                 name="zip"
                                 value={shippingForm.zip}
                                 onChange={handleShippingChange}
-                                style={pinError ? { borderColor: "red" } : {}}
                               />
-                              {pinError && (
-                                <div
-                                  style={{
-                                    color: "red",
-                                    fontSize: "12px",
-                                    marginTop: "5px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  {pinError}
-                                </div>
-                              )}
                             </fieldset>
                           </div>
                           <div className="col-lg-6 col-md-12 col-12">
@@ -463,15 +450,166 @@ const CheckoutSection = () => {
                               </select>
                             </fieldset>
                           </div>
+
+                          {/* --- CUSTOM SHIPPING CITY DROPDOWN --- */}
                           <div className="col-lg-6 col-md-12 col-12">
-                            <fieldset>
+                            <fieldset style={{ position: "relative" }}>
                               <label className="label">City</label>
-                              <input
-                                type="text"
-                                name="city"
-                                value={shippingForm.city}
-                                onChange={handleShippingChange}
-                              />
+                              <div
+                                onClick={() =>
+                                  setIsShippingCityOpen(!isShippingCityOpen)
+                                }
+                                style={{
+                                  border: `1px solid ${
+                                    cityError ? "red" : "#e5e7eb"
+                                  }`,
+                                  padding: "12px 15px",
+                                  borderRadius: "6px",
+                                  backgroundColor: "#fff",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  fontSize: "14px",
+                                  color: shippingForm.city ? "#000" : "#777",
+                                }}
+                              >
+                                {shippingForm.city || "Select a City"}
+                                <span
+                                  style={{ fontSize: "12px", color: "#999" }}
+                                >
+                                  ▼
+                                </span>
+                              </div>
+
+                              {isShippingCityOpen && (
+                                <>
+                                  <div
+                                    style={{
+                                      position: "fixed",
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      zIndex: 99,
+                                    }}
+                                    onClick={() => setIsShippingCityOpen(false)}
+                                  />
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "100%",
+                                      left: 0,
+                                      right: 0,
+                                      backgroundColor: "#fff",
+                                      border: "1px solid #e5e7eb",
+                                      borderRadius: "6px",
+                                      marginTop: "4px",
+                                      maxHeight: "220px",
+                                      overflowY: "auto",
+                                      zIndex: 100,
+                                      boxShadow:
+                                        "0 4px 12px rgba(0, 0, 0, 0.1)",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        padding: "8px",
+                                        position: "sticky",
+                                        top: 0,
+                                        backgroundColor: "#fff",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      <input
+                                        type="text"
+                                        placeholder="Search city..."
+                                        value={shippingCitySearch}
+                                        onChange={(e) =>
+                                          setShippingCitySearch(e.target.value)
+                                        }
+                                        style={{
+                                          width: "100%",
+                                          padding: "8px",
+                                          border: "1px solid #ddd",
+                                          borderRadius: "4px",
+                                          outline: "none",
+                                          fontSize: "14px",
+                                        }}
+                                      />
+                                    </div>
+                                    {availableCities
+                                      .filter((city) =>
+                                        city
+                                          .toLowerCase()
+                                          .includes(
+                                            shippingCitySearch.toLowerCase(),
+                                          ),
+                                      )
+                                      .map((city, index) => (
+                                        <div
+                                          key={index}
+                                          onClick={() => {
+                                            handleShippingChange({
+                                              target: {
+                                                name: "city",
+                                                value: city,
+                                              },
+                                            });
+                                            setIsShippingCityOpen(false);
+                                            setShippingCitySearch("");
+                                          }}
+                                          style={{
+                                            padding: "10px 15px",
+                                            cursor: "pointer",
+                                            borderBottom: "1px solid #f9f9f9",
+                                            fontSize: "14px",
+                                          }}
+                                          onMouseEnter={(e) =>
+                                            (e.target.style.backgroundColor =
+                                              "#f3f4f6")
+                                          }
+                                          onMouseLeave={(e) =>
+                                            (e.target.style.backgroundColor =
+                                              "#fff")
+                                          }
+                                        >
+                                          {city}
+                                        </div>
+                                      ))}
+                                    {availableCities.filter((c) =>
+                                      c
+                                        .toLowerCase()
+                                        .includes(
+                                          shippingCitySearch.toLowerCase(),
+                                        ),
+                                    ).length === 0 && (
+                                      <div
+                                        style={{
+                                          padding: "10px 15px",
+                                          fontSize: "13px",
+                                          color: "#999",
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        No cities found
+                                      </div>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                              {cityError && (
+                                <div
+                                  style={{
+                                    color: "red",
+                                    fontSize: "12px",
+                                    marginTop: "5px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {cityError}
+                                </div>
+                              )}
                             </fieldset>
                           </div>
 
@@ -591,25 +729,158 @@ const CheckoutSection = () => {
                                   onChange={handleBillingChange}
                                 >
                                   <option value="India">India</option>
-                                  <option value="Canada">Canada</option>
-                                  <option value="USA">USA</option>
-                                  <option value="Australia">Australia</option>
-                                  <option value="Mexico">Mexico</option>
                                 </select>
                               </fieldset>
                             </div>
+
+                            {/* --- CUSTOM BILLING CITY DROPDOWN --- */}
                             <div className="col-lg-6 col-md-12 col-12">
-                              <fieldset>
+                              <fieldset style={{ position: "relative" }}>
                                 <label className="label">City</label>
-                                <input
-                                  type="text"
-                                  name="city"
-                                  value={billingForm.city}
-                                  onChange={handleBillingChange}
-                                />
+                                <div
+                                  onClick={() =>
+                                    setIsBillingCityOpen(!isBillingCityOpen)
+                                  }
+                                  style={{
+                                    border: "1px solid #e5e7eb",
+                                    padding: "12px 15px",
+                                    borderRadius: "6px",
+                                    backgroundColor: "#fff",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    fontSize: "14px",
+                                    color: billingForm.city ? "#000" : "#777",
+                                  }}
+                                >
+                                  {billingForm.city || "Select a City"}
+                                  <span
+                                    style={{ fontSize: "12px", color: "#999" }}
+                                  >
+                                    ▼
+                                  </span>
+                                </div>
+                                {isBillingCityOpen && (
+                                  <>
+                                    <div
+                                      style={{
+                                        position: "fixed",
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        zIndex: 99,
+                                      }}
+                                      onClick={() =>
+                                        setIsBillingCityOpen(false)
+                                      }
+                                    />
+                                    <div
+                                      style={{
+                                        position: "absolute",
+                                        top: "100%",
+                                        left: 0,
+                                        right: 0,
+                                        backgroundColor: "#fff",
+                                        border: "1px solid #e5e7eb",
+                                        borderRadius: "6px",
+                                        marginTop: "4px",
+                                        maxHeight: "220px",
+                                        overflowY: "auto",
+                                        zIndex: 100,
+                                        boxShadow:
+                                          "0 4px 12px rgba(0, 0, 0, 0.1)",
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          padding: "8px",
+                                          position: "sticky",
+                                          top: 0,
+                                          backgroundColor: "#fff",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        <input
+                                          type="text"
+                                          placeholder="Search city..."
+                                          value={billingCitySearch}
+                                          onChange={(e) =>
+                                            setBillingCitySearch(e.target.value)
+                                          }
+                                          style={{
+                                            width: "100%",
+                                            padding: "8px",
+                                            border: "1px solid #ddd",
+                                            borderRadius: "4px",
+                                            outline: "none",
+                                            fontSize: "14px",
+                                          }}
+                                        />
+                                      </div>
+                                      {availableCities
+                                        .filter((city) =>
+                                          city
+                                            .toLowerCase()
+                                            .includes(
+                                              billingCitySearch.toLowerCase(),
+                                            ),
+                                        )
+                                        .map((city, index) => (
+                                          <div
+                                            key={index}
+                                            onClick={() => {
+                                              handleBillingChange({
+                                                target: {
+                                                  name: "city",
+                                                  value: city,
+                                                },
+                                              });
+                                              setIsBillingCityOpen(false);
+                                              setBillingCitySearch("");
+                                            }}
+                                            style={{
+                                              padding: "10px 15px",
+                                              cursor: "pointer",
+                                              borderBottom: "1px solid #f9f9f9",
+                                              fontSize: "14px",
+                                            }}
+                                            onMouseEnter={(e) =>
+                                              (e.target.style.backgroundColor =
+                                                "#f3f4f6")
+                                            }
+                                            onMouseLeave={(e) =>
+                                              (e.target.style.backgroundColor =
+                                                "#fff")
+                                            }
+                                          >
+                                            {city}
+                                          </div>
+                                        ))}
+                                      {availableCities.filter((c) =>
+                                        c
+                                          .toLowerCase()
+                                          .includes(
+                                            billingCitySearch.toLowerCase(),
+                                          ),
+                                      ).length === 0 && (
+                                        <div
+                                          style={{
+                                            padding: "10px 15px",
+                                            fontSize: "13px",
+                                            color: "#999",
+                                            textAlign: "center",
+                                          }}
+                                        >
+                                          No cities found
+                                        </div>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
                               </fieldset>
                             </div>
-
                             <div className="col-lg-6 col-md-12 col-12">
                               <fieldset>
                                 <label className="label">Address 1</label>
@@ -648,19 +919,25 @@ const CheckoutSection = () => {
                       </a>
                       <button
                         onClick={handleProceedToShipping}
-                        disabled={!isShippingAvailable}
+                        disabled={!isShippingAvailable || hasZeroPriceItem}
                         className="checkout-page-btn minicart-btn btn-primary"
                         style={{
-                          backgroundColor: "#de433f",
-                          borderColor: "#de433f",
+                          backgroundColor: hasZeroPriceItem
+                            ? "#cccccc"
+                            : "#407e18",
+                          borderColor: hasZeroPriceItem ? "#cccccc" : "#407e18",
                           color: "#fff",
-                          cursor: isShippingAvailable
-                            ? "pointer"
-                            : "not-allowed",
-                          opacity: isShippingAvailable ? 1 : 0.6,
+                          cursor:
+                            !isShippingAvailable || hasZeroPriceItem
+                              ? "not-allowed"
+                              : "pointer",
+                          opacity:
+                            !isShippingAvailable || hasZeroPriceItem ? 0.6 : 1,
                         }}
                       >
-                        PROCEED TO SHIPPING
+                        {hasZeroPriceItem
+                          ? "REMOVE ₹0.00 ITEMS"
+                          : "PROCEED TO SHIPPING"}
                       </button>
                     </div>
                   </div>
@@ -702,12 +979,14 @@ const CheckoutSection = () => {
                           const displayImg = imgPath.startsWith("http")
                             ? imgPath
                             : `${API_URL}${imgPath}`;
-                          const price =
-                            item.variant?.price || item.product?.price || 0;
+
+                          // CRITICAL FIX: Pricing
+                          const sellingPrice =
+                            item.variant?.discountPrice > 0
+                              ? item.variant.discountPrice
+                              : item.variant?.price || item.product?.price || 0;
                           const originalPrice =
-                            item.variant?.originalPrice ||
-                            item.product?.originalPrice ||
-                            price * 1.25;
+                            item.variant?.price || item.product?.price || 0;
 
                           return (
                             <div
@@ -755,24 +1034,26 @@ const CheckoutSection = () => {
                                 <div
                                   className="price-info"
                                   style={{
-                                    color: "#de433f",
+                                    color: " #407e18",
                                     fontWeight: "bold",
                                     fontSize: "14px",
                                     marginBottom: "4px",
                                   }}
                                 >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      color: "#999",
-                                      marginRight: "6px",
-                                      fontSize: "12px",
-                                      fontWeight: "normal",
-                                    }}
-                                  >
-                                    ₹{originalPrice.toFixed(2)}
-                                  </span>
-                                  ₹{price.toFixed(2)}
+                                  {originalPrice > sellingPrice && (
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        color: "#999",
+                                        marginRight: "6px",
+                                        fontSize: "12px",
+                                        fontWeight: "normal",
+                                      }}
+                                    >
+                                      ₹{originalPrice.toFixed(2)}
+                                    </span>
+                                  )}
+                                  ₹{sellingPrice.toFixed(2)}
                                 </div>
                                 <p
                                   className="product-vendor m-0"
@@ -803,36 +1084,19 @@ const CheckoutSection = () => {
                         </p>
                       </div>
 
-                      {finalSGST > 0 && (
-                        <div className="subtotal-item subtotal-box d-flex justify-content-between mb-2">
-                          <h4
-                            className="subtotal-title m-0"
-                            style={{ fontSize: "14px", color: "#555" }}
-                          >
-                            SGST
-                          </h4>
-                          <p
-                            className="subtotal-value m-0"
-                            style={{ fontSize: "14px", fontWeight: "500" }}
-                          >
-                            ₹{finalSGST.toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-
                       {finalCGST > 0 && (
                         <div className="subtotal-item subtotal-box d-flex justify-content-between mb-2">
                           <h4
                             className="subtotal-title m-0"
                             style={{ fontSize: "14px", color: "#555" }}
                           >
-                            CGST
+                            GST
                           </h4>
                           <p
                             className="subtotal-value m-0"
                             style={{ fontSize: "14px", fontWeight: "500" }}
                           >
-                            ₹{finalCGST.toFixed(2)}
+                            Included
                           </p>
                         </div>
                       )}
@@ -888,14 +1152,13 @@ const CheckoutSection = () => {
                           style={{
                             fontWeight: "bold",
                             fontSize: "18px",
-                            color: "#de433f",
+                            color: " #407e18",
                           }}
                         >
                           ₹{total.toFixed(2)}
                         </p>
                       </div>
 
-                      {/* PREMIUM COUPON SECTION (UPDATED UI) */}
                       <div className="mt-4 checkout-promo-code">
                         {appliedCoupon.code ? (
                           <div
@@ -905,7 +1168,7 @@ const CheckoutSection = () => {
                               gap: "12px",
                               padding: "15px",
                               backgroundColor: "#fff5f5",
-                              border: "1px dashed #de433f",
+                              border: "1px dashed  #407e18",
                               borderRadius: "6px",
                             }}
                           >
@@ -925,7 +1188,7 @@ const CheckoutSection = () => {
                               >
                                 <span
                                   style={{
-                                    color: "#de433f",
+                                    color: " #407e18",
                                     fontWeight: "bold",
                                     fontSize: "14px",
                                     textTransform: "uppercase",
@@ -950,7 +1213,7 @@ const CheckoutSection = () => {
                               type="button"
                               onClick={handleRemoveCoupon}
                               style={{
-                                backgroundColor: "#de433f",
+                                backgroundColor: " #407e18",
                                 color: "#fff",
                                 border: "none",
                                 padding: "10px 16px",
@@ -963,12 +1226,6 @@ const CheckoutSection = () => {
                                 width: "100%",
                                 marginTop: "4px",
                               }}
-                              onMouseEnter={(e) =>
-                                (e.target.style.backgroundColor = "#c83c39")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.target.style.backgroundColor = "#de433f")
-                              }
                             >
                               Remove Coupon
                             </button>
@@ -994,7 +1251,7 @@ const CheckoutSection = () => {
                                 transition: "border-color 0.2s",
                               }}
                               onFocus={(e) =>
-                                (e.target.style.borderColor = "#de433f")
+                                (e.target.style.borderColor = " #407e18")
                               }
                               onBlur={(e) =>
                                 (e.target.style.borderColor = "#e5e7eb")
@@ -1003,7 +1260,7 @@ const CheckoutSection = () => {
                             <button
                               type="submit"
                               style={{
-                                backgroundColor: "#de433f",
+                                backgroundColor: " #407e18",
                                 color: "#fff",
                                 padding: "12px",
                                 border: "none",
@@ -1014,12 +1271,6 @@ const CheckoutSection = () => {
                                 textTransform: "uppercase",
                                 transition: "0.3s",
                               }}
-                              onMouseEnter={(e) =>
-                                (e.target.style.backgroundColor = "#c83c39")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.target.style.backgroundColor = "#de433f")
-                              }
                             >
                               Apply Promo Code
                             </button>
@@ -1033,34 +1284,44 @@ const CheckoutSection = () => {
                     <div className="d-flex flex-column gap-2">
                       <button
                         onClick={handleProceedToShipping}
-                        disabled={!isShippingAvailable}
-                        className="checkout-page-btn minicart-btn btn-primary w-100 text-center"
+                        disabled={!isShippingAvailable || hasZeroPriceItem}
+                        className="w-100 text-center"
                         style={{
-                          backgroundColor: "#de433f",
-                          borderColor: "#de433f",
+                          backgroundColor: hasZeroPriceItem
+                            ? "#cccccc"
+                            : "#407e18",
                           color: "#fff",
                           padding: "14px",
                           borderRadius: "6px",
                           fontWeight: "bold",
-                          cursor: isShippingAvailable
-                            ? "pointer"
-                            : "not-allowed",
                           border: "none",
-                          opacity: isShippingAvailable ? 1 : 0.6,
+                          cursor:
+                            !isShippingAvailable || hasZeroPriceItem
+                              ? "not-allowed"
+                              : "pointer",
+                          opacity:
+                            !isShippingAvailable || hasZeroPriceItem ? 0.6 : 1,
+                          width: "100%",
+                          transition: "0.3s",
+                          display: "block",
+                          fontSize: "16px",
                         }}
                       >
-                        PROCEED TO SHIPPING
+                        {hasZeroPriceItem
+                          ? "REMOVE ₹0.00 ITEMS"
+                          : "PROCEED TO SHIPPING"}
                       </button>
                       <a
                         href="/cart"
-                        className="checkout-page-btn minicart-btn btn-secondary w-100 text-center mt-2"
+                        className="w-100 text-center"
                         style={{
                           padding: "14px",
                           borderRadius: "6px",
                           border: "1px solid #ddd",
                           color: "#333",
                           fontWeight: "bold",
-                          backgroundColor: "#fff",
+                          backgroundColor: "#407e18", // No !important needed now
+                          color: "#fff",
                         }}
                       >
                         BACK TO CART

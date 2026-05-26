@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { NavLink } from "react-router-dom";
 import ProductCard from "../components/ProductCard"; // Adjust path as needed
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const WishlistSection = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -94,7 +94,7 @@ const WishlistSection = () => {
                 style={{
                   width: "60px",
                   height: "3px",
-                  backgroundColor: "#de433f",
+                  backgroundColor: "#3c7d24",
                   margin: "15px auto",
                 }}
               />
@@ -136,7 +136,7 @@ const WishlistSection = () => {
                               justifyContent: "center",
                               cursor: "pointer",
                               boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                              color: "#de433f",
+                              color: "#3c7d24",
                             }}
                             title="Remove from Wishlist"
                           >
@@ -150,7 +150,7 @@ const WishlistSection = () => {
                   </div>
                 ) : (
                   <div className="text-center py-5">
-                    <h3 className="mb-4" style={{ color: "#de433f" }}>
+                    <h3 className="mb-4" style={{ color: "#3c7d24" }}>
                       Your wishlist is empty
                     </h3>
                     <p className="mb-4 text-muted">
@@ -160,7 +160,7 @@ const WishlistSection = () => {
                     <NavLink
                       to="/shop"
                       style={{
-                        backgroundColor: "#de433f",
+                        backgroundColor: "#3c7d24",
                         color: "#fff",
                         padding: "12px 35px",
                         borderRadius: "5px",
@@ -172,10 +172,10 @@ const WishlistSection = () => {
                         transition: "0.3s",
                       }}
                       onMouseOver={(e) =>
-                        (e.target.style.backgroundColor = "#c93c39")
+                        (e.target.style.backgroundColor = "#3c7d24")
                       }
                       onMouseOut={(e) =>
-                        (e.target.style.backgroundColor = "#de433f")
+                        (e.target.style.backgroundColor = "#3c7d24")
                       }
                     >
                       Return To Shop

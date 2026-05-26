@@ -18,7 +18,7 @@ const CreateInvoice = () => {
   const loadOrders = async () => {
     try {
       const res = await axios.get(
-        "https://demo-backend-k0yn.onrender.com/api/orders/admin/all",
+        "http://localhost:5000/api/orders/admin/all",
         {
           withCredentials: true,
         }
@@ -81,7 +81,7 @@ const CreateInvoice = () => {
       setDownloadingId(orderId);
 
       const response = await axios.get(
-        `https://demo-backend-k0yn.onrender.com/api/orders/${orderId}/invoice`,
+        `http://localhost:5000/api/orders/${orderId}/invoice`,
         {
           withCredentials: true,
           responseType: "blob", // Important for receiving binary PDF data

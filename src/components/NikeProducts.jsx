@@ -10,9 +10,7 @@ const NikeProducts = () => {
   useEffect(() => {
     const fetchNikeProducts = async () => {
       try {
-        const res = await axios.get(
-          "https://demo-backend-k0yn.onrender.com/api/products/"
-        );
+        const res = await axios.get("http://localhost:5000/api/products/");
 
         const nikeProducts = res.data.filter((p) => {
           // 1. Ignore inactive products

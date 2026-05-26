@@ -155,7 +155,7 @@ const CreateGst = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  const API_URL = "https://demo-backend-k0yn.onrender.com/api/gst";
+  const API_URL = "http://localhost:5000/api/gst";
 
   const initialState = {
     taxType: "SGST",
@@ -186,10 +186,10 @@ const CreateGst = () => {
       await axios.post(
         `${API_URL}/universal`,
         { value: val },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success(
-        `System set to: ${val === "Inclusive" ? "Include GST" : "Exclude GST"}`
+        `System set to: ${val === "Inclusive" ? "Include GST" : "Exclude GST"}`,
       );
     } catch (err) {
       toast.error("Failed to update global setting");
@@ -507,7 +507,7 @@ const CreateGst = () => {
                 marginBottom: "10px",
               }}
             >
-              <FaGlobe color="var(--mern-admin-primary)" /> Global GST Setting
+              <FaGlobe color="var(--mern-admin-primary)" /> GST Setting
             </div>
             <p
               style={{
@@ -517,28 +517,9 @@ const CreateGst = () => {
                 lineHeight: "1.5",
               }}
             >
-              Choose how you want to show prices to your customers across the
-              entire website.
+              Choose your gst rates and gst rates will be included in price from
+              where you create your products.
             </p>
-            <div style={s.inputGroup}>
-              <label style={s.label}>Tax Calculation Rule</label>
-
-              <CustomDropdown
-                isGlobal={true}
-                value={globalTaxRule}
-                onChange={handleGlobalRuleChange}
-                options={[
-                  {
-                    value: "Inclusive",
-                    label: "Include GST (Show prices with tax added)",
-                  },
-                  {
-                    value: "Exclusive",
-                    label: "Exclude GST (Show raw prices only)",
-                  },
-                ]}
-              />
-            </div>
           </div>
 
           {(canAdd || (canEdit && editingId)) && (

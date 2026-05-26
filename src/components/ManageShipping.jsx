@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "https://demo-backend-k0yn.onrender.com";
+const API_BASE = "http://localhost:5000";
 
 const ManageShipping = () => {
   const [shippingRules, setShippingRules] = useState([]);
@@ -22,7 +22,6 @@ const ManageShipping = () => {
 
   const [formData, setFormData] = useState({
     city: "",
-    pincode: "",
     shippingPrice: "",
     deliveryDuration: "3-5 Days",
     isAvailable: true,
@@ -51,7 +50,7 @@ const ManageShipping = () => {
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.city || !formData.pincode || formData.shippingPrice === "") {
+    if (!formData.city || formData.shippingPrice === "") {
       return toast.warn("Please fill required fields");
     }
 
@@ -62,7 +61,6 @@ const ManageShipping = () => {
       toast.success("Shipping rule saved!");
       setFormData({
         city: "",
-        pincode: "",
         shippingPrice: "",
         deliveryDuration: "3-5 Days",
         isAvailable: true,
@@ -89,7 +87,6 @@ const ManageShipping = () => {
   const handleEdit = (rule) => {
     setFormData({
       city: rule.city,
-      pincode: rule.pincode,
       shippingPrice: rule.shippingPrice,
       deliveryDuration: rule.deliveryDuration,
       isAvailable: rule.isAvailable,
@@ -148,7 +145,6 @@ const ManageShipping = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       rule.city.toLowerCase().includes(searchLower) ||
-      rule.pincode.toLowerCase().includes(searchLower) ||
       rule.shippingPrice.toString().includes(searchLower)
     );
   });
@@ -213,12 +209,12 @@ const ManageShipping = () => {
           /* Layout Grid */
           .ship-layout {
             display: grid;
-            grid-template-columns: 300px minmax(0, 1fr); /* minmax(0, 1fr) prevents table blowout */
+            grid-template-columns: 300px minmax(0, 1fr);
             gap: 20px;
           }
           
           .table-wrapper {
-            overflow-x: auto; /* Handles horizontal scroll if sidebar squishes it too much */
+            overflow-x: auto;
             width: 100%;
           }
 
@@ -250,7 +246,6 @@ const ManageShipping = () => {
             .header-actions { flex-direction: column; width: 100%; }
             .header-actions button, .search-box { width: 100%; justify-content: center; }
             
-            /* Card-style table for mobile */
             .ship-table thead { display: none; }
             .ship-table, .ship-table tbody, .ship-table tr, .ship-table td { display: block; width: 100%; }
             .ship-table tr { margin-bottom: 15px; border: 1px solid var(--mern-admin-border); border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -309,7 +304,7 @@ const ManageShipping = () => {
           <FaSearch color="#94a3b8" size={13} style={{ marginRight: "8px" }} />
           <input
             type="text"
-            placeholder="Search City, PIN..."
+            placeholder="Search City..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -379,19 +374,6 @@ const ManageShipping = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="e.g. Ahmedabad"
-              />
-            </div>
-
-            <div>
-              <label className="ship-label">PIN Code</label>
-              <input
-                type="text"
-                name="pincode"
-                className="ship-input"
-                value={formData.pincode}
-                onChange={handleInputChange}
-                required
-                placeholder="e.g. 380001"
               />
             </div>
 
@@ -474,7 +456,6 @@ const ManageShipping = () => {
             <thead>
               <tr>
                 <th>City</th>
-                <th>PIN Code</th>
                 <th>Price</th>
                 <th>Duration</th>
                 <th>Status</th>
@@ -495,9 +476,6 @@ const ManageShipping = () => {
                 >
                   <td data-label="City" style={{ fontWeight: "600" }}>
                     {rule.city}
-                  </td>
-                  <td data-label="PIN Code" style={{ color: "#475569" }}>
-                    {rule.pincode}
                   </td>
                   <td
                     data-label="Price"
@@ -571,7 +549,7 @@ const ManageShipping = () => {
               {filteredRules.length === 0 && (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="5"
                     style={{
                       textAlign: "center",
                       padding: "40px 20px",

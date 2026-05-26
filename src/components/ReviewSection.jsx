@@ -39,7 +39,7 @@ const ReviewSection = () => {
                 />
               </svg>
             </li>
-            <li style={{ color: "#de433f", fontWeight: "600" }}>Review</li>
+            <li style={{ color: "#3c7d24", fontWeight: "600" }}>Review</li>
           </ul>
         </div>
       </div>
@@ -113,21 +113,15 @@ const ReviewSection = () => {
                       className="d-flex justify-content-between mt-3 pt-3"
                       style={{ borderTop: "1px dashed #ddd" }}
                     >
-                      <span className="fw-bold text-dark">
-                        Total Paid (COD):
-                      </span>
+                      <span className="fw-bold text-dark">Total Paid:</span>
                       <span
                         className="fw-bold"
-                        style={{ color: "#de433f", fontSize: "18px" }}
+                        style={{ color: "#3c7d24", fontSize: "18px" }}
                       >
                         ₹{order.totalPrice.toFixed(2)}
                       </span>
                     </div>
                   </div>
-
-                  <p className="mt-4">
-                    We've sent a confirmation email to your registered address.
-                  </p>
 
                   <div className="mt-4 d-flex justify-content-center gap-3">
                     <a
@@ -147,7 +141,7 @@ const ReviewSection = () => {
                       className="btn-primary text-uppercase p-3 px-4 rounded"
                       style={{
                         textDecoration: "none",
-                        backgroundColor: "#de433f",
+                        backgroundColor: "#3c7d24",
                         color: "#fff",
                         fontWeight: "600",
                       }}

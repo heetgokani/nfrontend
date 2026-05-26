@@ -4,7 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PageHeader } from "./Crashed";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com/api/role/createrole";
+const API_URL = "http://localhost:5000/api/role/createrole";
 
 const defaultPermissions = {
   role: { add: false, view: false, edit: false, delete: false },

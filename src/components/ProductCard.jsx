@@ -1,80 +1,258 @@
 import React, { useState, useEffect, useMemo, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { IoHeartCircleOutline, IoHeartCircle } from "react-icons/io5";
+import {
+  IoHeartOutline,
+  IoHeart,
+  IoEyeOutline,
+  IoCartOutline,
+  IoCheckmarkCircle,
+  IoInformationCircle,
+  IoCloseCircle,
+} from "react-icons/io5";
 import axios from "axios";
-import { toast } from "react-toastify";
+// ✅ CHANGED: Swapped react-toastify for your custom un-stackable toast
+import { bntToast as toast } from "../components/BntToastify";
 import { AuthContext } from "../context/AuthContext";
 
-const getCssColor = (colorName) => {
-  if (!colorName) return "transparent";
-  const lower = String(colorName).toLowerCase();
-  if (lower === "navy blue") return "#000080";
-  if (lower === "light pink") return "#FFB6C1";
-  return lower.replace(/\s/g, "");
+// --- RESPONSIVE CSS INJECTION ---
+// This ensures media queries work perfectly without needing an external CSS file.
+let stylesInjected = false;
+const injectStyles = () => {
+  if (typeof window !== "undefined" && !stylesInjected) {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .nikam-pc-wrapper {
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 12px;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      }
+      .nikam-pc-img-container {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        margin-bottom: 12px;
+        background: #f8f8f8;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .nikam-pc-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .nikam-pc-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #3c7d24;
+        color: #fff;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+        z-index: 2;
+      }
+      .nikam-pc-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 2;
+      }
+      .nikam-pc-btn {
+        background: #fff;
+        border: none;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1a201a;
+        font-size: 20px; /* Controls icon size */
+        transition: transform 0.2s ease;
+      }
+      .nikam-pc-btn:hover {
+        transform: scale(1.05);
+      }
+      .nikam-pc-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .nikam-pc-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a201a;
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+      .nikam-pc-price-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: auto;
+        flex-wrap: wrap;
+      }
+      .nikam-pc-current-price {
+        font-size: 17px;
+        font-weight: 700;
+        color: #3c7d24;
+      }
+      .nikam-pc-old-price {
+        font-size: 13px;
+        text-decoration: line-through;
+        color: #999;
+      }
+
+      /* --- MOBILE RESPONSIVENESS --- */
+      @media (max-width: 576px) {
+        .nikam-pc-wrapper {
+          padding: 8px; /* Tighter padding on mobile to maximize card space */
+        }
+        .nikam-pc-img-container {
+          aspect-ratio: 4 / 5; /* Taller aspect ratio makes the image noticeably larger on narrow screens */
+          margin-bottom: 8px;
+        }
+        .nikam-pc-badge {
+          top: 6px;
+          left: 6px;
+          padding: 3px 5px;
+          font-size: 9px;
+        }
+        .nikam-pc-actions {
+          top: 6px;
+          right: 6px;
+          gap: 5px;
+        }
+        .nikam-pc-btn {
+          padding: 6px; /* Shrinks the button padding */
+          font-size: 15px; /* Shrinks the icons cleanly */
+        }
+        .nikam-pc-title {
+          font-size: 13px; /* Scales down title */
+          margin-bottom: 4px;
+        }
+        .nikam-pc-current-price {
+          font-size: 14px; /* Scales down price */
+        }
+        .nikam-pc-old-price {
+          font-size: 11px;
+        }
+        .nikam-pc-price-row {
+          gap: 4px;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    stylesInjected = true;
+  }
 };
 
 const ProductCard = ({ product }) => {
+  injectStyles(); // Ensures CSS is loaded
+
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
-  // --- RESPONSIVE STATE ---
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const initialVariant = useMemo(() => {
     if (!product?.variants || product.variants.length === 0) return null;
     return product.variants.find((v) => v.isDefault) || product.variants[0];
   }, [product]);
 
-  const [selectedVariant, setSelectedVariant] = useState(initialVariant);
-  const [isHovered, setIsHovered] = useState(false);
+  const [selectedVariant] = useState(initialVariant);
   const [wishlisted, setWishlisted] = useState(false);
   const [wishlistItemId, setWishlistItemId] = useState(null);
 
-  const [ratingInfo, setRatingInfo] = useState({ average: 0, count: 0 });
+  // Price Logic
+  const originalPrice = Number(selectedVariant?.price || product?.price || 0);
+  const discountPrice = Number(selectedVariant?.discountPrice || 0);
+  const isSale = discountPrice > 0 && discountPrice < originalPrice;
+  const discountPercent = isSale
+    ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+    : 0;
+  const currentPrice = isSale ? discountPrice : originalPrice;
 
-  useEffect(() => {
-    if (selectedVariant?._id) {
-      const fetchRating = async () => {
-        try {
-          const res = await axios.get(
-            `https://demo-backend-k0yn.onrender.com/api/reviews/${selectedVariant._id}`
-          );
-          setRatingInfo({
-            average: res.data.averageRating || 0,
-            count: res.data.count || 0,
-          });
-        } catch (err) {
-          console.error("Error fetching card rating", err);
-        }
-      };
-      fetchRating();
-    }
-  }, [selectedVariant?._id]);
+  // --- LOCAL INLINE TOAST STYLES ---
+  const baseToastOptions = {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: true,
+    closeButton: false,
+    icon: false,
+  };
 
+  const toastStyles = {
+    success: {
+      style: {
+        background: "#f2f7f2",
+        color: "#0a2612",
+        border: "1px solid rgba(64, 126, 24, 0.2)",
+        borderRadius: "50px",
+        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+        padding: "10px 20px",
+        minHeight: "44px",
+        fontFamily: "'Outfit', sans-serif",
+        fontSize: "14px",
+        fontWeight: "500",
+        display: "flex",
+        alignItems: "center",
+      },
+    },
+    info: {
+      style: {
+        background: "#f4f4f5",
+        color: "#18181b",
+        border: "1px solid rgba(24, 24, 27, 0.15)",
+        borderRadius: "50px",
+        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+        padding: "10px 20px",
+        minHeight: "44px",
+        fontFamily: "'Outfit', sans-serif",
+        fontSize: "14px",
+        fontWeight: "500",
+        display: "flex",
+        alignItems: "center",
+      },
+    },
+    error: {
+      style: {
+        background: "#fff3f3",
+        color: "#8c1d1d",
+        border: "1px solid rgba(222, 67, 63, 0.2)",
+        borderRadius: "50px",
+        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+        padding: "10px 20px",
+        minHeight: "44px",
+        fontFamily: "'Outfit', sans-serif",
+        fontSize: "14px",
+        fontWeight: "500",
+        display: "flex",
+        alignItems: "center",
+      },
+    },
+  };
+
+  // --- WISH LIST LOGIC ---
   useEffect(() => {
     if (user && product?._id) {
       axios
-        .get("https://demo-backend-k0yn.onrender.com/api/wishlist", {
-          withCredentials: true,
-        })
+        .get("http://localhost:5000/api/wishlist", { withCredentials: true })
         .then((res) => {
           const items = res.data?.items || [];
           const foundItem = items.find(
             (item) =>
-              (item.product?._id === product._id ||
-                item.product === product._id) &&
-              (!selectedVariant ||
-                item.variant?._id === selectedVariant._id ||
-                item.variant === selectedVariant._id)
+              item.product?._id === product._id || item.product === product._id,
           );
-
           if (foundItem) {
             setWishlisted(true);
             setWishlistItemId(foundItem._id);
@@ -83,87 +261,9 @@ const ProductCard = ({ product }) => {
             setWishlistItemId(null);
           }
         })
-        .catch((err) => console.error("Wishlist check error", err));
-    } else {
-      setWishlisted(false);
+        .catch(console.error);
     }
-  }, [user, product?._id, selectedVariant?._id]);
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const starSize = isMobile ? 10 : 12; // Smaller stars on mobile
-    for (let i = 1; i <= 5; i++) {
-      if (i <= rating) {
-        stars.push(<FaStar key={i} size={starSize} color="#ffc107" />);
-      } else if (i - 0.5 <= rating) {
-        stars.push(<FaStarHalfAlt key={i} size={starSize} color="#ffc107" />);
-      } else {
-        stars.push(<FaRegStar key={i} size={starSize} color="#ffc107" />);
-      }
-    }
-    return stars;
-  };
-
-  const colorOptions = useMemo(() => {
-    if (!product?.variants) return [];
-    const colors = new Map();
-    product.variants.forEach((v) => {
-      const colorAttr = v.attributes?.find(
-        (a) => a.name.toLowerCase() === "color"
-      );
-      if (colorAttr && !colors.has(colorAttr.value)) {
-        colors.set(colorAttr.value, v);
-      }
-    });
-    return Array.from(colors.entries()).map(([color, variant]) => ({
-      color,
-      variant,
-    }));
-  }, [product]);
-
-  const getImageUrl = (path) => {
-    if (!path) return "https://via.placeholder.com/300";
-    if (path.startsWith("http")) return path;
-    return `https://demo-backend-k0yn.onrender.com${path}`;
-  };
-
-  const originalPrice = Number(
-    selectedVariant?.price ||
-      selectedVariant?.originalPrice ||
-      product?.price ||
-      0
-  );
-
-  const discountPrice = Number(selectedVariant?.discountPrice || 0);
-  const isSale = discountPrice > 0 && discountPrice < originalPrice;
-  const currentPrice = isSale ? discountPrice : originalPrice;
-
-  const displayImg = getImageUrl(
-    selectedVariant?.images?.[0] || product?.thumbnail
-  );
-
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    try {
-      await axios.post(
-        "https://demo-backend-k0yn.onrender.com/api/cart/add",
-        {
-          productId: product._id,
-          variantId: selectedVariant?._id || null,
-          quantity: 1,
-        },
-        { withCredentials: true }
-      );
-      toast.success("Added to Cart!");
-      window.dispatchEvent(new Event("cartUpdated"));
-    } catch (err) {
-      toast.error("Error adding to cart");
-    }
-  };
+  }, [user, product?._id]);
 
   const handleWishlist = async (e) => {
     e.preventDefault();
@@ -174,266 +274,145 @@ const ProductCard = ({ product }) => {
     try {
       if (!wishlisted) {
         const res = await axios.post(
-          "https://demo-backend-k0yn.onrender.com/api/wishlist/add",
-          {
-            productId: product._id,
-            variantId: selectedVariant?._id || null,
-          },
-          { withCredentials: true }
+          "http://localhost:5000/api/wishlist/add",
+          { productId: product._id, variantId: selectedVariant?._id || null },
+          { withCredentials: true },
         );
         setWishlisted(true);
         const newItem = res.data.wishlist?.items?.find(
-          (i) => i.product === product._id && i.variant === selectedVariant?._id
+          (i) => i.product === product._id,
         );
         if (newItem) setWishlistItemId(newItem._id);
 
-        toast.success("Added to Wishlist!");
+        toast.success(
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <IoCheckmarkCircle size={18} color="#3c7d24" />
+            <span>Added to Wishlist!</span>
+          </div>,
+          { ...baseToastOptions, ...toastStyles.success },
+        );
         window.dispatchEvent(new Event("wishlistUpdated"));
       } else {
         if (wishlistItemId) {
           await axios.delete(
-            `https://demo-backend-k0yn.onrender.com/api/wishlist/remove/${wishlistItemId}`,
-            { withCredentials: true }
+            `http://localhost:5000/api/wishlist/remove/${wishlistItemId}`,
+            { withCredentials: true },
           );
           setWishlisted(false);
           setWishlistItemId(null);
-          toast.info("Removed from Wishlist");
+
+          toast.info(
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <IoInformationCircle size={18} color="#18181b" />
+              <span>Removed from Wishlist</span>
+            </div>,
+            { ...baseToastOptions, ...toastStyles.info },
+          );
           window.dispatchEvent(new Event("wishlistUpdated"));
         }
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error updating wishlist");
+      toast.error(
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <IoCloseCircle size={18} color="#de433f" />
+          <span>Error updating wishlist</span>
+        </div>,
+        { ...baseToastOptions, ...toastStyles.error },
+      );
     }
   };
 
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    try {
+      await axios.post(
+        "http://localhost:5000/api/cart/add",
+        {
+          productId: product._id,
+          variantId: selectedVariant?._id || null,
+          quantity: 1,
+        },
+        { withCredentials: true },
+      );
+
+      toast.success(
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <IoCheckmarkCircle size={18} color="#3c7d24" />
+          <span>Added to Cart!</span>
+        </div>,
+        { ...baseToastOptions, ...toastStyles.success },
+      );
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error(
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <IoCloseCircle size={18} color="#de433f" />
+          <span>Error adding to cart</span>
+        </div>,
+        { ...baseToastOptions, ...toastStyles.error },
+      );
+    }
+  };
+
+  const getImageUrl = (path) =>
+    !path
+      ? "https://via.placeholder.com/400"
+      : path.startsWith("http")
+        ? path
+        : `http://localhost:5000${path}`;
+
   return (
-    <div
-      className="product-card"
-      style={{
-        borderRadius: isMobile ? "12px" : "20px",
-        border: "1px solid #e0e0e0",
-        boxShadow: isHovered
-          ? "0 12px 30px rgba(0,0,0,0.08)"
-          : "0 4px 15px rgba(0,0,0,0.03)",
-        overflow: "hidden",
-        background: "#fff",
-        transition: "0.3s",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "100%",
-        boxSizing: "border-box",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <NavLink
-        to={`/product/${product?._id}`}
-        style={{
-          height: isMobile ? "160px" : "220px", // Smaller image area on mobile
-          padding: isMobile ? "10px" : "15px",
-          flexShrink: 0,
-        }}
-      >
-        <img
-          src={displayImg}
-          alt={product?.title}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain", // CHANGED TO CONTAIN SO SHOE IS NOT CUT
-            borderRadius: isMobile ? "8px" : "14px",
-            backgroundColor: "#f6f6f6", // Added slight background to frame contain mode well
-          }}
-        />
-      </NavLink>
-
-      <div
-        style={{
-          padding: isMobile ? "10px" : "15px",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            marginBottom: "4px",
-            visibility: ratingInfo.count === 0 ? "hidden" : "visible",
-          }}
-        >
-          <div style={{ display: "flex" }}>
-            {renderStars(ratingInfo.average)}
-          </div>
-          <span
-            style={{
-              fontSize: isMobile ? "10px" : "12px",
-              color: "#555",
-              fontWeight: "600",
-            }}
-          >
-            {Number(ratingInfo.average).toFixed(1)}
-          </span>
-        </div>
-
+    <div className="nikam-pc-wrapper">
+      {/* Image Area */}
+      <div className="nikam-pc-img-container">
         <NavLink
           to={`/product/${product?._id}`}
-          style={{
-            fontSize: isMobile ? "13px" : "16px", // Smaller title on mobile
-            fontWeight: "600",
-            color: "#111",
-            textDecoration: "none",
-            marginBottom: "4px",
-            wordWrap: "break-word",
-            display: "-webkit-box",
-            WebkitLineClamp: "2",
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden", // Ensures long titles don't break layout
-          }}
+          style={{ display: "block", height: "100%" }}
         >
-          {product?.title}
+          <img
+            src={getImageUrl(
+              selectedVariant?.images?.[0] || product?.thumbnail,
+            )}
+            alt={product?.title}
+            className="nikam-pc-img"
+          />
         </NavLink>
 
-        <div
-          style={{
-            fontSize: isMobile ? "9px" : "11px",
-            color: "#888",
-            textTransform: "uppercase",
-            marginBottom: "6px",
-          }}
-        >
-          {product?.brand?.name || product?.brand}
-        </div>
+        {isSale && <div className="nikam-pc-badge">{discountPercent}% OFF</div>}
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: isMobile ? "4px" : "8px",
-            marginBottom: isMobile ? "6px" : "10px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: isMobile ? "14px" : "17px",
-              fontWeight: "700",
-            }}
-          >
+        {/* Action Buttons */}
+        <div className="nikam-pc-actions">
+          <button onClick={handleAddToCart} className="nikam-pc-btn">
+            {/* size prop removed - inherits from CSS font-size */}
+            <IoCartOutline />
+          </button>
+
+          <button onClick={handleWishlist} className="nikam-pc-btn">
+            {wishlisted ? <IoHeart color="#de433f" /> : <IoHeartOutline />}
+          </button>
+
+          <NavLink to={`/product/${product?._id}`} className="nikam-pc-btn">
+            <IoEyeOutline />
+          </NavLink>
+        </div>
+      </div>
+
+      {/* Product Info */}
+      <div className="nikam-pc-info">
+        <div className="nikam-pc-title">{product?.title}</div>
+        <div className="nikam-pc-price-row">
+          <span className="nikam-pc-current-price">
             ₹{currentPrice.toFixed(2)}
           </span>
           {isSale && (
-            <span
-              style={{
-                fontSize: isMobile ? "10px" : "12px",
-                textDecoration: "line-through",
-                color: "#999",
-              }}
-            >
+            <span className="nikam-pc-old-price">
               ₹{originalPrice.toFixed(2)}
             </span>
           )}
-        </div>
-
-        {colorOptions.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "6px",
-              marginBottom: isMobile ? "8px" : "10px",
-            }}
-          >
-            {colorOptions.map(({ color, variant }, idx) => {
-              const isSelected = selectedVariant?._id === variant._id;
-              const cssColor = variant.colorHex || getCssColor(color);
-              const isWhite =
-                cssColor === "white" ||
-                cssColor === "#ffffff" ||
-                cssColor === "#fff";
-              const dotSize = isMobile ? "14px" : "18px"; // Smaller dots on mobile
-              return (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedVariant(variant)}
-                  style={{
-                    width: dotSize,
-                    height: dotSize,
-                    borderRadius: "50%",
-                    backgroundColor: cssColor,
-                    cursor: "pointer",
-                    border: isWhite
-                      ? "1px solid #ccc"
-                      : "1px solid transparent",
-                    boxShadow: isSelected
-                      ? "0 0 0 2px #fff, 0 0 0 3px #000"
-                      : "none",
-                  }}
-                  title={color}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        <div
-          style={{
-            display: "flex",
-            gap: isMobile ? "4px" : "8px",
-            marginTop: "auto",
-            width: "100%",
-            alignItems: "center",
-          }}
-        >
-          <button
-            onClick={handleWishlist}
-            style={{
-              width: isMobile ? "32px" : "42px", // Smaller button on mobile
-              height: isMobile ? "32px" : "42px",
-              flexShrink: 0,
-              borderRadius: "5px",
-              background: "#fff",
-              border: "1px solid #ddd",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              transition: "all 0.25s ease",
-            }}
-          >
-            {wishlisted ? (
-              <IoHeartCircle size={isMobile ? 22 : 28} color="#de433f" />
-            ) : (
-              <IoHeartCircleOutline size={isMobile ? 22 : 28} color="#999" />
-            )}
-          </button>
-
-          <button
-            onClick={handleAddToCart}
-            disabled={selectedVariant?.stock === 0}
-            style={{
-              flex: 1,
-              height: isMobile ? "32px" : "42px", // Smaller button on mobile
-              borderRadius: "5px",
-              border: "none",
-              background: "#de433f",
-              color: "#fff",
-              fontWeight: "600",
-              fontSize: isMobile ? "11px" : "13px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "0.2s",
-              cursor: selectedVariant?.stock === 0 ? "not-allowed" : "pointer",
-              opacity: selectedVariant?.stock === 0 ? 0.7 : 1,
-              padding: "0 5px", // Prevents text cutoff
-            }}
-          >
-            {selectedVariant?.stock === 0 ? "Out of Stock" : "Add to Cart"}
-          </button>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const PaymentSection = () => {
   const navigate = useNavigate();
@@ -36,6 +36,17 @@ const PaymentSection = () => {
     fetchCart();
   }, []);
 
+  // Helper to load Razorpay Script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePayment = async (e) => {
     e.preventDefault();
     if (!cartData || cartData.items.length === 0) {
@@ -48,40 +59,120 @@ const PaymentSection = () => {
     setProcessing(true);
 
     try {
-      const orderItems = cartData.items.map((item) => ({
-        product: item.product._id,
-        variant: item.variant?._id || null,
-        title: item.product.title,
-        quantity: item.quantity,
-        price: item.variant?.price || item.product?.price || 0,
-        image: item.variant?.images?.[0] || item.product?.thumbnail || "",
-      }));
+      const res = await loadRazorpayScript();
+      if (!res) {
+        setProcessing(false);
+        return toast.error("Razorpay SDK failed to load. Are you online?");
+      }
 
+      // CRITICAL FIX: Ensure the payload maps the correct selling price
+      // In PaymentSection.jsx, inside handlePayment
+      const orderItems = cartData.items.map((item) => {
+        const sellingPrice =
+          item.variant?.discountPrice > 0
+            ? item.variant.discountPrice
+            : item.variant?.price || item.product?.price || 0;
+
+        return {
+          product: item.product._id,
+          variant: item.variant?._id || null,
+          title: item.product.title,
+          quantity: item.quantity,
+          price: sellingPrice, // EXPLICITLY PASS THE PRICE HERE
+          image: item.variant?.images?.[0] || item.product?.thumbnail || "",
+        };
+      });
+
+      // ... existing code ...
       const payload = {
         orderItems,
         shippingAddress,
-        billingAddress, // Now explicitly sending the verified billing address
+        billingAddress,
         ...totals,
+        // ADD THIS LINE to send the exact total explicitly:
+        totalAmount: totals.totalPrice,
+      };
+      // ... existing code ...
+
+      // 1. Initialize Order in Backend (Validates stock & creates Razorpay Order)
+      const initResponse = await axios.post(
+        `${API_URL}/api/orders/init-payment`,
+        payload,
+        {
+          withCredentials: true,
+        },
+      );
+
+      if (!initResponse.data.success)
+        throw new Error("Failed to initialize payment");
+
+      const { razorpayOrder, keyId } = initResponse.data;
+
+      // 2. Open Razorpay Popup
+      const options = {
+        key: keyId,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Nikam Organic",
+        description: "Complete your order",
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          // 3. Verify Signature & Save Order in Backend
+          try {
+            const verifyPayload = {
+              ...payload,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            };
+
+            const finalRes = await axios.post(
+              `${API_URL}/api/orders`,
+              verifyPayload,
+              {
+                withCredentials: true,
+              },
+            );
+
+            if (finalRes.data.success) {
+              toast.success("Payment Successful! Order Placed.");
+              localStorage.removeItem("checkoutTotals");
+              localStorage.removeItem("shippingAddress");
+              localStorage.removeItem("billingAddress");
+              localStorage.removeItem("sameAsShipping");
+
+              setTimeout(() => {
+                navigate("/review", { state: { order: finalRes.data.order } });
+              }, 1500);
+            }
+          } catch (err) {
+            toast.error(
+              err.response?.data?.message || "Payment verification failed.",
+            );
+          }
+        },
+        prefill: {
+          name: `${billingAddress.firstName} ${billingAddress.lastName}`,
+          email: billingAddress.email,
+          contact: billingAddress.phone,
+        },
+        theme: {
+          color: "#407e18",
+        },
+        modal: {
+          ondismiss: function () {
+            setProcessing(false);
+            toast.error("Payment cancelled.");
+          },
+        },
       };
 
-      const { data } = await axios.post(`${API_URL}/api/orders`, payload, {
-        withCredentials: true,
-      });
-
-      if (data.success) {
-        toast.success("Order Placed Successfully!");
-
-        localStorage.removeItem("checkoutTotals");
-        localStorage.removeItem("shippingAddress");
-        localStorage.removeItem("billingAddress");
-        localStorage.removeItem("sameAsShipping");
-
-        setTimeout(() => {
-          navigate("/review", { state: { order: data.order } });
-        }, 1500);
-      }
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to place order.");
+      toast.error(
+        error.response?.data?.message || "Failed to initialize payment.",
+      );
       setProcessing(false);
     }
   };
@@ -176,7 +267,7 @@ const PaymentSection = () => {
                 />
               </svg>
             </li>
-            <li style={{ color: "#de433f", fontWeight: "600" }}>Payment</li>
+            <li style={{ color: "#407e18", fontWeight: "600" }}>Payment</li>
           </ul>
         </div>
       </div>
@@ -185,7 +276,6 @@ const PaymentSection = () => {
         <div className="checkout-page mt-100 mb-100">
           <div className="container">
             <div className="checkout-page-wrapper">
-              {/* Keeping row left-aligned exactly as requested */}
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-12 col-12">
                   <div className="section-header mb-3">
@@ -219,22 +309,22 @@ const PaymentSection = () => {
                           <input
                             type="radio"
                             name="payment"
-                            id="cod"
+                            id="razorpay"
                             checked
                             readOnly
-                            style={{ accentColor: "#de433f" }}
+                            style={{ accentColor: "#407e18" }}
                           />
                           <label
-                            htmlFor="cod"
+                            htmlFor="razorpay"
                             className="ms-3 mb-0 fw-bold"
                             style={{ fontSize: "16px" }}
                           >
-                            Cash on Delivery (COD)
+                            Razorpay (UPI, Cards, NetBanking)
                           </label>
                         </div>
                         <span
                           className="fw-bold"
-                          style={{ fontSize: "18px", color: "#de433f" }}
+                          style={{ fontSize: "18px", color: "#407e18" }}
                         >
                           ₹{totals.totalPrice.toFixed(2)}
                         </span>
@@ -243,8 +333,7 @@ const PaymentSection = () => {
                         className="text-muted ms-4 mb-0"
                         style={{ fontSize: "14px" }}
                       >
-                        Pay with cash upon delivery. Ensure you have the exact
-                        amount ready.
+                        Pay securely using Razorpay's encrypted payment gateway.
                       </p>
                     </div>
                   </div>
@@ -262,12 +351,15 @@ const PaymentSection = () => {
                         className="checkout-page-btn minicart-btn btn-primary border-0"
                         disabled={processing}
                         style={{
-                          backgroundColor: "#de433f",
+                          backgroundColor: "#407e18",
                           color: "#fff",
-                          cursor: "pointer",
+                          cursor: processing ? "not-allowed" : "pointer",
+                          opacity: processing ? 0.7 : 1,
                         }}
                       >
-                        {processing ? "PROCESSING ORDER..." : "PLACE ORDER"}
+                        {processing
+                          ? "PROCESSING PAYMENT..."
+                          : "PAY & PLACE ORDER"}
                       </button>
                     </div>
                   </div>

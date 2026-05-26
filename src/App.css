@@ -1,3 +1,53 @@
+:root {
+  /* Core Brand Colors */
+  --green-dark: #3c7d24;
+  --green-medium: #407e18;
+
+  /* Theme Variables */
+  --bg-white: #ffffff;
+  --bg-off-white: #f8faf8;
+  --text-main: #1a201a;
+  --text-muted: #4a5c4a;
+  --green-darkest: #0b2b16;
+  --green-light: #e8f3e8;
+  --text-gray: #4a5c4a;
+  --primary-color: #407e18;
+  --btn-primary: #407e18;
+  --btn-primary-hover: #3c7d24;
+
+  /* Secondary Button Colors */
+  --btn-secondary: #6c757d; /* Replace with your desired secondary color */
+  --btn-secondary-hover: #5a6268;
+  --secondary-color: #407e18;
+  /* Fonts */
+  --font-sans: "Poppins", sans-serif;
+  --font-serif: "Playfair Display", serif;
+  /* Overlays & Shadows */
+  --hero-overlay: rgba(26, 32, 26, 0.75);
+  --btn-shadow: 0 4px 14px 0 rgba(60, 125, 36, 0.39);
+}
+
+/* FIX: Explicitly lock html, body, and #root to prevent horizontal breakouts on mobile Safari/Chrome */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  overflow-x: hidden;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
 .sw-logo {
   width: 100px;
   height: 100px;
@@ -110,7 +160,7 @@
     padding: 0 30px;
     flex-direction: column;
     gap: 40px;
-    text-align: center; /* Ensures content centers when stacked */
+    text-align: center;
   }
 }
 

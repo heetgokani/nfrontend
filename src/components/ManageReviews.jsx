@@ -15,13 +15,17 @@ const ManageReviews = () => {
       // ⚠️ IMPORTANT: This backend route MUST exist and use .populate()
       // to get the user and product details, otherwise the table will be empty!
       const res = await axios.get(
-        "https://demo-backend-k0yn.onrender.com/api/reviews/admin/all"
+        "http://localhost:5000/api/reviews/admin/all",
       );
       setReviews(res.data.reviews || []);
       setFiltered(res.data.reviews || []);
     } catch (err) {
       console.error("Failed to load reviews", err);
     }
+  };
+  const getImgUrl = (path) => {
+    if (!path) return "https://via.placeholder.com/50";
+    return path.startsWith("http") ? path : `http://localhost:5000${path}`;
   };
 
   useEffect(() => {
@@ -39,7 +43,7 @@ const ManageReviews = () => {
           const userMatch = r.user?.name?.toLowerCase().includes(lowerQ);
           const commentMatch = r.comment?.toLowerCase().includes(lowerQ);
           return productMatch || userMatch || commentMatch;
-        })
+        }),
       );
     } else {
       setFiltered(reviews);
@@ -48,12 +52,9 @@ const ManageReviews = () => {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(
-        `https://demo-backend-k0yn.onrender.com/api/reviews/${id}/status`,
-        {
-          status: newStatus,
-        }
-      );
+      await axios.put(`http://localhost:5000/api/reviews/${id}/status`, {
+        status: newStatus,
+      });
       toast.success(`Review ${newStatus} successfully`);
       loadReviews();
     } catch (err) {
@@ -64,9 +65,7 @@ const ManageReviews = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this review?")) {
       try {
-        await axios.delete(
-          `https://demo-backend-k0yn.onrender.com/api/reviews/${id}`
-        );
+        await axios.delete(`http://localhost:5000/api/reviews/${id}`);
         toast.success("Review deleted successfully");
         loadReviews();
       } catch (err) {
@@ -150,14 +149,14 @@ const ManageReviews = () => {
         status === "Approved"
           ? "#d1fae5"
           : status === "Rejected"
-          ? "#fee2e2"
-          : "#fef3c7",
+            ? "#fee2e2"
+            : "#fef3c7",
       color:
         status === "Approved"
           ? "#065f46"
           : status === "Rejected"
-          ? "#991b1b"
-          : "#b45309",
+            ? "#991b1b"
+            : "#b45309",
     }),
     btn: (color, bg) => ({
       background: bg,
@@ -236,10 +235,10 @@ const ManageReviews = () => {
               const p = rev.variant?.productId || {};
               const v = rev.variant || {};
               const displayImg = v.images?.[0]
-                ? `https://demo-backend-k0yn.onrender.com${v.images[0]}`
+                ? getImgUrl(v.images[0])
                 : p.thumbnail
-                ? `https://demo-backend-k0yn.onrender.com${p.thumbnail}`
-                : "https://via.placeholder.com/50";
+                  ? getImgUrl(p.thumbnail)
+                  : "https://via.placeholder.com/50";
               const isHovered = hoveredRow === rev._id;
 
               return (

@@ -1,29 +1,5 @@
 ﻿@charset "UTF-8";
-/*
-Theme Name: Bisum - Multipurpose eCommerce Template
-Theme URI: https://spreethemesprevious.github.io/bisum/
-Author: Spree Themes
-Author URI: https://themeforest.net/user/spreethemes/portfolio
-Description: Bisum – eCommerce HTML template is a clean, modern and well organized template. It's suitable for all store and this template can be easily customized.
-Version: 2.0.0
-*/
-/*============================================================================
-  Prefix mixin for generating vendor prefixes:
-  Usage:
-    // Input:
-    .element {
-      @include prefix(transform, scale(1), ms webkit spec);
-    }
 
-    // Output:
-    .element {
-      -ms-transform: scale(1);
-      -webkit-transform: scale(1);
-      transform: scale(1);
-    }
-
-  Based on https://github.com/thoughtbot/bourbon/blob/master/app/assets/stylesheets/addons/_prefixer.scss
-==============================================================================*/
 iframe {
   width: 100%;
 }
@@ -56,11 +32,11 @@ iframe {
 }
 
 .bg-3 {
-  background-color: #f76b6a;
+  background-color: #407e18;
 }
 
 .bg-4 {
-  background-color: #de433f;
+  background-color: #407e18;
 }
 
 .bg-5 {

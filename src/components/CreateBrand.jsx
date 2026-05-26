@@ -22,9 +22,7 @@ const CreateBrand = () => {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get(
-        "https://demo-backend-k0yn.onrender.com/api/brands"
-      );
+      const res = await axios.get("http://localhost:5000/api/brands");
       setBrands(res.data);
     } catch (err) {
       toast.error("Failed to fetch brands");
@@ -42,17 +40,11 @@ const CreateBrand = () => {
     setLoading(true);
     try {
       if (editId) {
-        await axios.put(
-          `https://demo-backend-k0yn.onrender.com/api/brands/${editId}`,
-          { name }
-        );
+        await axios.put(`http://localhost:5000/api/brands/${editId}`, { name });
         toast.success("Brand updated!");
         setEditId(null);
       } else {
-        await axios.post(
-          "https://demo-backend-k0yn.onrender.com/api/brands/create",
-          { name }
-        );
+        await axios.post("http://localhost:5000/api/brands/create", { name });
         toast.success("Brand created!");
       }
       setName("");
@@ -73,9 +65,7 @@ const CreateBrand = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this brand?")) return;
     try {
-      await axios.delete(
-        `https://demo-backend-k0yn.onrender.com/api/brands/${id}`
-      );
+      await axios.delete(`http://localhost:5000/api/brands/${id}`);
       toast.success("Brand deleted successfully!");
       if (editId === id) {
         setEditId(null);

@@ -13,7 +13,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "https://demo-backend-k0yn.onrender.com";
+const API_BASE = "http://localhost:5000";
 
 const CreateOrder = () => {
   const [orders, setOrders] = useState([]);

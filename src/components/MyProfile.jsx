@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { FiUser, FiMail, FiShield, FiLock } from "react-icons/fi";
+import React from "react";
+import { FiUser, FiMail, FiShield } from "react-icons/fi";
+// TODO: Adjust this path to wherever your AuthContext file is located!
+import { useAuth } from "../context/AuthContext";
 
 const MyProfile = () => {
-  // Mocking user data. You can replace this with your actual useAuth() context or API call.
-  const [user, setUser] = useState({
-    firstName: "Het",
-    lastName: "Gokani",
-    email: "het@gmail.com",
-    role: "Customer",
-    joined: "March 2026",
-  });
+  const { user } = useAuth();
+
+  if (!user) {
+    return <div className="text-center mt-5">Loading profile...</div>;
+  }
 
   return (
     <>
@@ -42,7 +41,7 @@ const MyProfile = () => {
             transition: color 0.2s;
           }
           .breadcrumb-list a:hover {
-            color: #de433f;
+            color: #407e18;
           }
 
           /* Profile Card Design */
@@ -57,7 +56,7 @@ const MyProfile = () => {
           
           /* Top Banner/Header of Card */
           .profile-card-header {
-            background: linear-gradient(135deg, #de433f 0%, #c53b38 100%);
+            background: linear-gradient(135deg, #407e18 0%, #3c7d24 100%);
             height: 120px;
             position: relative;
           }
@@ -81,12 +80,12 @@ const MyProfile = () => {
           .profile-avatar-inner {
             width: 100%;
             height: 100%;
-            background: #fdf2f2;
+            background: #e8f3e8;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #de433f;
+            color: #407e18;
           }
 
           /* Body of Card */
@@ -100,6 +99,9 @@ const MyProfile = () => {
             color: #222;
             margin-bottom: 8px;
             text-transform: capitalize;
+            /* Allow extremely long names to break */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
           }
           .profile-role-badge {
             background-color: #f1f5f9;
@@ -119,6 +121,7 @@ const MyProfile = () => {
             display: flex;
             flex-direction: column;
             gap: 16px;
+            width: 100%;
             max-width: 400px;
             margin: 0 auto 30px auto;
           }
@@ -131,21 +134,28 @@ const MyProfile = () => {
             border: 1px solid #eee;
             text-align: left;
             transition: transform 0.2s;
+            width: 100%;
+            box-sizing: border-box;
           }
           .info-row:hover {
             transform: translateY(-2px);
-            border-color: #de433f;
+            border-color: #407e18;
           }
           .info-icon {
-            color: #de433f;
+            color: #407e18;
             font-size: 20px;
             margin-right: 16px;
-            background: #fdf2f2;
+            background: #e8f3e8;
             padding: 10px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0; /* Prevents icon from getting squished by long text */
+          }
+          .info-content {
+            flex: 1;
+            min-width: 0; /* CRITICAL: Allows flex child to shrink below its content size */
           }
           .info-content p {
             margin: 0;
@@ -160,35 +170,11 @@ const MyProfile = () => {
             font-size: 15px;
             color: #333;
             font-weight: 600;
-          }
-
-          /* Disabled Action Button */
-          .action-buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-          }
-          .btn-disabled-fancy {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #e9ecef;
-            color: #999;
-            border: 1px solid #dde1e5;
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: not-allowed;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-          }
-          
-          /* Tooltip for disabled button */
-          .btn-disabled-fancy:hover {
-            background-color: #e2e6ea;
-            color: #888;
+            /* CRITICAL: Forces long emails to break to the next line */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.4;
           }
 
           @media (max-width: 576px) {
@@ -205,17 +191,13 @@ const MyProfile = () => {
               bottom: -55px;
             }
             .profile-card-body {
-              padding: 70px 20px 30px 20px;
+              padding: 70px 15px 30px 15px;
             }
             .profile-name {
               font-size: 22px;
             }
             .info-row {
-              padding: 12px 16px;
-            }
-            .btn-disabled-fancy {
-              width: 100%;
-              justify-content: center;
+              padding: 12px 15px;
             }
           }
         `}
@@ -241,7 +223,7 @@ const MyProfile = () => {
                 />
               </svg>
             </li>
-            <li style={{ color: "#de433f", fontWeight: "600" }}>My Profile</li>
+            <li style={{ color: "#407e18", fontWeight: "600" }}>My Profile</li>
           </ul>
         </div>
       </div>
@@ -262,10 +244,11 @@ const MyProfile = () => {
 
                 {/* Profile Information */}
                 <div className="profile-card-body">
-                  <h1 className="profile-name">
-                    {user.firstName} {user.lastName}
-                  </h1>
-                  <span className="profile-role-badge">{user.role}</span>
+                  <h1 className="profile-name">{user?.name}</h1>
+
+                  <span className="profile-role-badge">
+                    {user?.role?.rolename || user?.role || "USER"}
+                  </span>
 
                   <div className="profile-info-grid">
                     {/* Name Row */}
@@ -275,9 +258,7 @@ const MyProfile = () => {
                       </div>
                       <div className="info-content">
                         <p>Full Name</p>
-                        <h6>
-                          {user.firstName} {user.lastName}
-                        </h6>
+                        <h6>{user?.name}</h6>
                       </div>
                     </div>
 
@@ -288,22 +269,11 @@ const MyProfile = () => {
                       </div>
                       <div className="info-content">
                         <p>Email Address</p>
-                        <h6>{user.email}</h6>
+                        <h6>{user?.email}</h6>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="action-buttons">
-                    <button
-                      className="btn-disabled-fancy"
-                      disabled
-                      title="Password change is currently unavailable"
-                    >
-                      <FiLock size={18} />
-                      Change Password
-                    </button>
-                  </div>
                   <div className="mt-3 text-muted" style={{ fontSize: "12px" }}>
                     <FiShield style={{ marginRight: "4px" }} />
                     Secure Account

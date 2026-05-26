@@ -10,6 +10,10 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [hoveredRow, setHoveredRow] = useState(null);
+
+  // ✅ ADDED: Loading state for the nice loader
+  const [isLoading, setIsLoading] = useState(true);
+
   const { auth } = useAuth();
 
   const canAdd = auth?.user?.role?.permissions?.products?.add;
@@ -17,28 +21,29 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
   const canDelete = auth?.user?.role?.permissions?.products?.delete;
 
   const load = async () => {
+    setIsLoading(true); // ✅ Start loading
     try {
-      const res = await axios.get(
-        "https://demo-backend-k0yn.onrender.com/api/products/"
-      );
+      const res = await axios.get("http://localhost:5000/api/products/");
       const baseProducts = res.data;
 
       const productsWithVariants = await Promise.all(
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `https://demo-backend-k0yn.onrender.com/api/products/${p._id}`
+              `http://localhost:5000/api/products/${p._id}`,
             );
             return { ...p, variants: detailRes.data.variants || [] };
           } catch (e) {
             return { ...p, variants: [] };
           }
-        })
+        }),
       );
       setProducts(productsWithVariants);
       setFiltered(productsWithVariants);
     } catch (err) {
       toast.error("Failed to load products");
+    } finally {
+      setIsLoading(false); // ✅ Stop loading
     }
   };
 
@@ -59,7 +64,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
             ?.toLowerCase()
             .includes(lowerQ);
           return titleMatch || brandMatch || variantMatch;
-        })
+        }),
       );
     } else {
       setFiltered(products);
@@ -70,13 +75,11 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
     if (!canDelete) return toast.error("Permission Denied");
     if (
       window.confirm(
-        "Are you sure you want to delete this product and all its variants?"
+        "Are you sure you want to delete this product and all its variants?",
       )
     ) {
       try {
-        await axios.delete(
-          `https://demo-backend-k0yn.onrender.com/api/products/delete/${id}`
-        );
+        await axios.delete(`http://localhost:5000/api/products/delete/${id}`);
         toast.success("Product deleted successfully");
         load();
       } catch (err) {
@@ -129,19 +132,24 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
     if (!canEdit) return toast.error("Permission Denied");
     const newStatus = product.status === "Active" ? "Inactive" : "Active";
     try {
-      // FIX: Send a clean JSON payload for status updates so it doesn't trigger formatting errors
       await axios.put(
-        `https://demo-backend-k0yn.onrender.com/api/products/update/${product._id}`,
+        `http://localhost:5000/api/products/update/${product._id}`,
         {
           status: newStatus,
         },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
       toast.success(`Marked as ${newStatus}`);
       load();
     } catch (err) {
       toast.error("Status update failed");
     }
+  };
+
+  // ✅ Helper to fix Cloudinary image loading issue
+  const getImgUrl = (path) => {
+    if (!path) return "https://via.placeholder.com/50";
+    return path.startsWith("http") ? path : `http://localhost:5000${path}`;
   };
 
   const s = {
@@ -246,13 +254,33 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
       display: "inline-block",
       border: "1px solid #cbd5e1",
     },
+    // ✅ Custom styles for the loader container
+    loaderContainer: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "400px",
+      width: "100%",
+    },
+    spinner: {
+      width: "40px",
+      height: "40px",
+      border: "4px solid rgba(0,0,0,0.1)",
+      borderTop: "4px solid var(--mern-admin-primary)",
+      borderRadius: "50%",
+      animation: "spin 1s linear infinite",
+      marginBottom: "15px",
+    },
   };
 
   return (
     <>
-      {/* CSS injected for mobile/tablet responsiveness ONLY */}
+      {/* CSS injected for mobile/tablet responsiveness AND the loading spinner */}
       <style>
         {`
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            
             @media (max-width: 768px) {
               .responsive-wrapper { padding: 10px !important; }
               
@@ -353,113 +381,154 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
           </div>
         </div>
 
-        <table style={s.table} className="responsive-table">
-          <thead>
-            <tr>
-              <th style={s.th}>Image</th>
-              <th style={s.th}>Name</th>
-              <th style={s.th}>Brand</th>
-              <th style={s.th}>Variants</th>
-              <th style={s.th}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => {
-              const firstVariant = p.variants?.[0] || {};
-              const displayImg = firstVariant.images?.[0]
-                ? `https://demo-backend-k0yn.onrender.com${firstVariant.images[0]}`
-                : p.thumbnail
-                ? `https://demo-backend-k0yn.onrender.com${p.thumbnail}`
-                : "https://via.placeholder.com/50";
-              const isHovered = hoveredRow === p._id;
-              const variantCount = p.variants?.length || 0;
-
-              return (
-                <tr
-                  key={p._id}
-                  onMouseEnter={() => setHoveredRow(p._id)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                  style={{
-                    background: isHovered ? "#f8fafc" : "#fff",
-                    transition: "0.2s",
-                  }}
-                >
-                  <td style={s.td} data-label="Image">
-                    <img src={displayImg} style={s.imgBox} alt="thumbnail" />
-                  </td>
-                  <td style={s.td} data-label="Name">
-                    <div className="td-name-content">
-                      <p style={s.productTitle}>{p.title}</p>
-                      <div
-                        style={{ ...s.actionRow, opacity: isHovered ? 1 : 0 }}
-                        className="responsive-action-row"
-                      >
-                        {canEdit && (
-                          <span
-                            style={s.actionLink("var(--mern-admin-primary)")}
-                            onClick={() => handleAction(p, "edit")}
-                          >
-                            Edit
-                          </span>
-                        )}
-                        {canEdit && canAdd && (
-                          <span style={{ color: "#cbd5e1" }}>|</span>
-                        )}
-                        {canAdd && (
-                          <span
-                            style={s.actionLink("var(--mern-admin-text-main)")}
-                            onClick={() => handleAction(p, "clone")}
-                          >
-                            Clone
-                          </span>
-                        )}
-                        {(canEdit || canAdd) && canDelete && (
-                          <span style={{ color: "#cbd5e1" }}>|</span>
-                        )}
-                        {canDelete && (
-                          <span
-                            style={s.actionLink("var(--mern-admin-danger)")}
-                            onClick={() => handleDelete(p._id)}
-                          >
-                            Trash
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td style={s.td} data-label="Brand">
-                    {p.brand?.name || "—"}
-                  </td>
-                  <td style={s.td} data-label="Variants">
-                    {variantCount > 0 ? (
-                      <span style={s.variantBadge}>
-                        {variantCount} Variant{variantCount > 1 ? "s" : ""}
-                      </span>
-                    ) : (
-                      <span
-                        style={{
-                          color: "#94a3b8",
-                          fontSize: "13px",
-                          fontWeight: "500",
-                        }}
-                      >
-                        None
-                      </span>
-                    )}
-                  </td>
-                  <td style={s.td} data-label="Status">
-                    <span
-                      style={s.badge(p.status || "Active")}
-                      onClick={() => toggleStatus(p)}
-                    >
-                      {p.status || "Active"}
-                    </span>
+        {/* ✅ RENDER LOADER OR TABLE BASED ON STATE */}
+        {isLoading ? (
+          <div style={s.loaderContainer}>
+            <div style={s.spinner}></div>
+            <h3
+              style={{ color: "#64748b", fontSize: "16px", fontWeight: "600" }}
+            >
+              Loading your products...
+            </h3>
+          </div>
+        ) : (
+          <table style={s.table} className="responsive-table">
+            <thead>
+              <tr>
+                <th style={s.th}>Image</th>
+                <th style={s.th}>Name</th>
+                <th style={s.th}>Brand</th>
+                <th style={s.th}>Variants</th>
+                <th style={s.th}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                      color: "#64748b",
+                    }}
+                  >
+                    No products found.
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((p) => {
+                  const firstVariant = p.variants?.[0] || {};
+
+                  // ✅ FIX: Get the correct image using the helper function
+                  const displayImg = firstVariant.images?.[0]
+                    ? getImgUrl(firstVariant.images[0])
+                    : p.thumbnail
+                      ? getImgUrl(p.thumbnail)
+                      : "https://via.placeholder.com/50";
+
+                  const isHovered = hoveredRow === p._id;
+                  const variantCount = p.variants?.length || 0;
+
+                  return (
+                    <tr
+                      key={p._id}
+                      onMouseEnter={() => setHoveredRow(p._id)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                      style={{
+                        background: isHovered ? "#f8fafc" : "#fff",
+                        transition: "0.2s",
+                      }}
+                    >
+                      <td style={s.td} data-label="Image">
+                        <img
+                          src={displayImg}
+                          style={s.imgBox}
+                          alt="thumbnail"
+                        />
+                      </td>
+                      <td style={s.td} data-label="Name">
+                        <div className="td-name-content">
+                          <p style={s.productTitle}>{p.title}</p>
+                          <div
+                            style={{
+                              ...s.actionRow,
+                              opacity: isHovered ? 1 : 0,
+                            }}
+                            className="responsive-action-row"
+                          >
+                            {canEdit && (
+                              <span
+                                style={s.actionLink(
+                                  "var(--mern-admin-primary)",
+                                )}
+                                onClick={() => handleAction(p, "edit")}
+                              >
+                                Edit
+                              </span>
+                            )}
+                            {canEdit && canAdd && (
+                              <span style={{ color: "#cbd5e1" }}>|</span>
+                            )}
+                            {canAdd && (
+                              <span
+                                style={s.actionLink(
+                                  "var(--mern-admin-text-main)",
+                                )}
+                                onClick={() => handleAction(p, "clone")}
+                              >
+                                Clone
+                              </span>
+                            )}
+                            {(canEdit || canAdd) && canDelete && (
+                              <span style={{ color: "#cbd5e1" }}>|</span>
+                            )}
+                            {canDelete && (
+                              <span
+                                style={s.actionLink("var(--mern-admin-danger)")}
+                                onClick={() => handleDelete(p._id)}
+                              >
+                                Trash
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={s.td} data-label="Brand">
+                        {p.brand?.name || "—"}
+                      </td>
+                      <td style={s.td} data-label="Variants">
+                        {variantCount > 0 ? (
+                          <span style={s.variantBadge}>
+                            {variantCount} Variant{variantCount > 1 ? "s" : ""}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              color: "#94a3b8",
+                              fontSize: "13px",
+                              fontWeight: "500",
+                            }}
+                          >
+                            None
+                          </span>
+                        )}
+                      </td>
+                      <td style={s.td} data-label="Status">
+                        <span
+                          style={s.badge(p.status || "Active")}
+                          onClick={() => toggleStatus(p)}
+                        >
+                          {p.status || "Active"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </>
   );

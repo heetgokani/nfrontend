@@ -28,9 +28,7 @@ const Createfaq = () => {
   }, []);
 
   const fetchFaqs = async () => {
-    const res = await axios.get(
-      "https://demo-backend-k0yn.onrender.com/api/faq/all"
-    );
+    const res = await axios.get("http://localhost:5000/api/faq/all");
     setFaqs(res.data);
   };
 
@@ -40,15 +38,12 @@ const Createfaq = () => {
     try {
       if (editingId) {
         await axios.put(
-          `https://demo-backend-k0yn.onrender.com/api/faq/update/${editingId}`,
+          `http://localhost:5000/api/faq/update/${editingId}`,
           formData
         );
         toast.success("FAQ Updated");
       } else {
-        await axios.post(
-          "https://demo-backend-k0yn.onrender.com/api/faq/add",
-          formData
-        );
+        await axios.post("http://localhost:5000/api/faq/add", formData);
         toast.success("FAQ Created");
       }
       setFormData({ question: "", answer: "", order: 0, isActive: true });
@@ -69,9 +64,7 @@ const Createfaq = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this FAQ?")) return;
-    await axios.delete(
-      `https://demo-backend-k0yn.onrender.com/api/faq/delete/${id}`
-    );
+    await axios.delete(`http://localhost:5000/api/faq/delete/${id}`);
     toast.success("Deleted");
     fetchFaqs();
   };

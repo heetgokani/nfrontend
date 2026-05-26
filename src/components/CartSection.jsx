@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { IoCloseOutline } from "react-icons/io5";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const CartSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
@@ -10,7 +10,21 @@ const CartSection = () => {
 
   // State to prevent rapid double-clicking race conditions
   const [updatingItemId, setUpdatingItemId] = useState(null);
+  // SECURITY CHECK: Returns true if any item calculates to 0
+  const hasZeroPriceItem = cartData.items.some((item) => {
+    const p = item.product || {};
+    const v = item.variant || {};
+    const originalPrice = Number(v.price) || Number(p.price) || 0;
+    let sellingPrice =
+      Number(v.discountPrice) || Number(p.discountPrice) || originalPrice;
 
+    // Failsafe fallback
+    if (sellingPrice === 0 && originalPrice > 0) {
+      sellingPrice = originalPrice;
+    }
+
+    return sellingPrice <= 0;
+  });
   const fetchCart = async () => {
     try {
       const { data } = await axios.get(`${API_URL}/api/cart`, {
@@ -31,7 +45,6 @@ const CartSection = () => {
   const handleUpdateQuantity = async (itemId, action, currentQty, maxStock) => {
     // 1. Prevent incrementing beyond stock limit
     if (action === "increment" && currentQty >= maxStock) {
-      // Simply return, UI will just not let them click further
       return;
     }
 
@@ -45,7 +58,7 @@ const CartSection = () => {
       await axios.put(
         `${API_URL}/api/cart/update/${itemId}`,
         { action },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       await fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
@@ -71,11 +84,14 @@ const CartSection = () => {
     }
   };
 
-  // Calculations (Shipping removed)
+  // CRITICAL FIX: Calculate subtotal using the exact DISCOUNTED selling price
   const calculateSubtotal = () => {
     return cartData.items.reduce((total, item) => {
-      const price = item.variant?.price || item.product?.price || 0;
-      return total + price * item.quantity;
+      const sellingPrice =
+        item.variant?.discountPrice > 0
+          ? item.variant.discountPrice
+          : item.variant?.price || item.product?.price || 0;
+      return total + sellingPrice * item.quantity;
     }, 0);
   };
 
@@ -108,7 +124,7 @@ const CartSection = () => {
             transition: 0.2s;
           }
           .mobile-remove-btn:hover {
-            color: #de433f;
+            color: #407e18;
           }
           .quantity-pill {
             display: flex;
@@ -191,7 +207,7 @@ const CartSection = () => {
                   className="btn-primary text-uppercase px-5 py-3"
                   style={{
                     textDecoration: "none",
-                    backgroundColor: "#de433f",
+                    backgroundColor: "#407e18",
                     color: "#fff",
                     borderRadius: "5px",
                     fontWeight: "600",
@@ -237,8 +253,17 @@ const CartSection = () => {
                             const displayImg = imgPath.startsWith("http")
                               ? imgPath
                               : `${API_URL}${imgPath}`;
-                            const price =
+
+                            // CRITICAL FIX: Pricing
+                            const sellingPrice =
+                              item.variant?.discountPrice > 0
+                                ? item.variant.discountPrice
+                                : item.variant?.price ||
+                                  item.product?.price ||
+                                  0;
+                            const originalPrice =
                               item.variant?.price || item.product?.price || 0;
+
                             const maxStock =
                               item.variant?.stock || item.product?.stock || 0;
                             const currentQty = item.quantity;
@@ -268,7 +293,7 @@ const CartSection = () => {
                                     }}
                                     onMouseOver={(e) =>
                                       !isUpdating &&
-                                      (e.currentTarget.style.color = "#de433f")
+                                      (e.currentTarget.style.color = "#407e18")
                                     }
                                     onMouseOut={(e) =>
                                       !isUpdating &&
@@ -346,7 +371,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -381,7 +406,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={
@@ -406,7 +431,23 @@ const CartSection = () => {
                                 </td>
                                 <td className="cart-item-price text-end">
                                   <div className="product-price fw-bold text-dark">
-                                    ₹{(price * item.quantity).toFixed(2)}
+                                    {originalPrice > sellingPrice && (
+                                      <span
+                                        style={{
+                                          textDecoration: "line-through",
+                                          color: "#999",
+                                          marginRight: "6px",
+                                          fontSize: "14px",
+                                          fontWeight: "normal",
+                                        }}
+                                      >
+                                        ₹
+                                        {(
+                                          originalPrice * item.quantity
+                                        ).toFixed(2)}
+                                      </span>
+                                    )}
+                                    ₹{(sellingPrice * item.quantity).toFixed(2)}
                                   </div>
                                 </td>
                               </tr>
@@ -430,8 +471,17 @@ const CartSection = () => {
                         const displayImg = imgPath.startsWith("http")
                           ? imgPath
                           : `${API_URL}${imgPath}`;
-                        const price =
+
+                        // CRITICAL FIX: Pricing
+                        const sellingPrice =
+                          item.variant?.discountPrice > 0
+                            ? item.variant.discountPrice
+                            : item.product?.discountPrice > 0 // Added product-level discount check
+                              ? item.product.discountPrice
+                              : item.variant?.price || item.product?.price || 0;
+                        const originalPrice =
                           item.variant?.price || item.product?.price || 0;
+
                         const maxStock =
                           item.variant?.stock || item.product?.stock || 0;
                         const currentQty = item.quantity;
@@ -499,7 +549,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -520,7 +570,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={
@@ -533,11 +583,29 @@ const CartSection = () => {
                                   <div
                                     className="fw-bold"
                                     style={{
-                                      color: "#de433f",
+                                      color: "#407e18",
                                       fontSize: "16px",
                                     }}
                                   >
-                                    ₹{(price * item.quantity).toFixed(2)}
+                                    {originalPrice > sellingPrice && (
+                                      <span
+                                        style={{
+                                          textDecoration: "line-through",
+                                          color: "#999",
+                                          marginRight: "6px",
+                                          fontSize: "12px",
+                                          fontWeight: "normal",
+                                          display: "block",
+                                          textAlign: "right",
+                                        }}
+                                      >
+                                        ₹
+                                        {(
+                                          originalPrice * item.quantity
+                                        ).toFixed(2)}
+                                      </span>
+                                    )}
+                                    ₹{(sellingPrice * item.quantity).toFixed(2)}
                                   </div>
                                 </div>
                               </div>
@@ -573,7 +641,7 @@ const CartSection = () => {
                             style={{
                               fontSize: "18px",
                               fontWeight: "800",
-                              color: "#de433f",
+                              color: "#407e18",
                             }}
                           >
                             Total:
@@ -583,7 +651,7 @@ const CartSection = () => {
                             style={{
                               fontSize: "18px",
                               fontWeight: "800",
-                              color: "#de433f",
+                              color: "#407e18",
                             }}
                           >
                             ₹{total.toFixed(2)}
@@ -597,13 +665,26 @@ const CartSection = () => {
                         </p>
                         <div className="d-flex justify-content-center mt-4">
                           <a
-                            href="/checkout"
+                            href={hasZeroPriceItem ? "#" : "/checkout"}
+                            onClick={(e) => {
+                              if (hasZeroPriceItem) {
+                                e.preventDefault();
+                                alert(
+                                  "Checkout is disabled because an item in your cart has a ₹0.00 price. Please remove it to proceed.",
+                                );
+                              }
+                            }}
                             className="btn btn-primary w-100 py-3 text-uppercase"
                             style={{
-                              backgroundColor: "#de433f",
+                              backgroundColor: hasZeroPriceItem
+                                ? "#cccccc"
+                                : "#407e18",
                               border: "none",
                               borderRadius: "50px",
                               fontWeight: "600",
+                              cursor: hasZeroPriceItem
+                                ? "not-allowed"
+                                : "pointer",
                             }}
                           >
                             Proceed to Checkout

@@ -1,48 +1,32 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { FiMail, FiMapPin, FiPhone, FiSend } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin, FiSend } from "react-icons/fi";
+import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-// Import Toastify
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ContactSection = () => {
-  const brandRed = "#de433f";
+  const organicGreen = "#407e18";
+  const deepForest = "#0b2b16";
+  const lightBg = "#f2f8f2";
+  const borderGreen = "#dceddc";
+  const textMuted = "#4a5c4a";
 
-  // State for form fields
   const [formData, setFormData] = useState({
-    fullName: "",
+    fullName: "", // Changed to match schema
     email: "",
     subject: "",
-    phone: "",
+    phone: "", // Added phone
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-
-  // Handle Input Change
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     try {
-      const response = await axios.post(
-        "https://demo-backend-k0yn.onrender.com/api/contact/submit",
-        formData
-      );
-
-      // Success Toast
-      toast.success(response.data.message || "Message sent successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-        style: { backgroundColor: brandRed },
-      });
-
+      // Sending data that matches backend schema
+      await axios.post("http://localhost:5000/api/contact/submit", formData);
+      toast.success("Message sent! We'll be in touch.");
       setFormData({
         fullName: "",
         email: "",
@@ -50,199 +34,139 @@ const ContactSection = () => {
         phone: "",
         message: "",
       });
-    } catch (error) {
-      // Error Toast
-      toast.error("Failed to send message. Please try again later.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+    } catch (err) {
+      toast.error("Failed to send. Ensure all fields are filled.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const contactData = [
-    {
-      icon: <FiMail size={28} />,
-      title: "Mail Address",
-      info1: "info@example.com",
-      info2: "info2@example.com",
-    },
-    {
-      icon: <FiMapPin size={28} />,
-      title: "Office Location",
-      info1: "2715 Ash Dr. San Jose,",
-      info2: "South Dakota 83475",
-    },
-    {
-      icon: <FiPhone size={28} />,
-      title: "Phone Number",
-      info1: "(201) 555-0124",
-      info2: "(307) 555-0133",
-    },
-  ];
-
   return (
-    <div style={{ backgroundColor: "#ffffff" }}>
-      {/* Toast Notification Container */}
+    <section style={{ backgroundColor: lightBg, padding: "80px 0" }}>
       <ToastContainer />
-
-      <div
-        className="breadcrumb"
-        style={{ padding: "15px 0", background: "#f9f9f9" }}
-      >
-        <div className="container">
-          <ul
-            className="list-unstyled d-flex align-items-center m-0"
-            style={{ fontSize: "14px" }}
+      <div className="container">
+        <div className="text-center mb-5">
+          <h2
+            style={{ color: deepForest, fontWeight: "800", fontSize: "40px" }}
           >
-            <li>
-              <NavLink to="/" style={{ color: "#000", textDecoration: "none" }}>
-                Home
-              </NavLink>
-            </li>
-            <li className="d-flex align-items-center">
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 64 64"
-                fill="none"
-                style={{ margin: "0 10px", opacity: 0.5 }}
-              >
-                <path
-                  d="M25.9375 8.5625L23.0625 11.4375L43.625 32L23.0625 52.5625L25.9375 55.4375L47.9375 33.4375L49.3125 32L47.9375 30.5625L25.9375 8.5625Z"
-                  fill="#000"
-                />
-              </svg>
-            </li>
-            <li style={{ color: "#777" }}>Contact US</li>
-          </ul>
+            Get In Touch
+          </h2>
+          <p style={{ color: textMuted, marginTop: "10px" }}>
+            We'd love to hear from you. Reach out via email, phone, or visit us.
+          </p>
         </div>
-      </div>
 
-      <main className="container mt-4 mb-5 pt-2">
-        <div className="row g-4 mb-5">
-          {contactData.map((item, idx) => (
-            <div className="col-lg-4" key={idx}>
-              <div className="contact-card-custom">
-                <div className="icon-box" style={{ color: brandRed }}>
-                  {item.icon}
+        <div className="row g-4 justify-content-center">
+          <div className="col-lg-4">
+            <div className="contact-info-organic">
+              <h3>Contact Details</h3>
+              <div className="info-block">
+                <div className="icon-circle">
+                  <FiMail />
                 </div>
-                <h4
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    marginBottom: "15px",
-                  }}
-                >
-                  {item.title}
-                </h4>
-                <p className="m-0 text-muted">{item.info1}</p>
-                <p className="m-0 text-muted">{item.info2}</p>
+                <div>
+                  <h4>Email</h4>
+                  <p>nikamorganic712@gmail.com</p>
+                </div>
+              </div>
+              <div className="info-block">
+                <div className="icon-circle">
+                  <FiPhone />
+                </div>
+                <div>
+                  <h4>Phone</h4>
+                  <p> +91 8855932532</p>
+                </div>
+              </div>
+              <div className="info-block">
+                <div className="icon-circle">
+                  <FiMapPin />
+                </div>
+                <div>
+                  <h4>Address</h4>
+                  <p>Dhule - 424002, Maharashtra</p>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="row justify-content-center">
-          <div className="col-lg-10">
-            <div className="form-wrapper-custom">
-              <div className="text-center mb-5">
-                <span
-                  style={{
-                    color: brandRed,
-                    fontWeight: "700",
-                    textTransform: "uppercase",
-                    letterSpacing: "2px",
-                    fontSize: "12px",
-                  }}
-                >
-                  Get In Touch
-                </span>
-                <h2
-                  style={{
-                    fontSize: "36px",
-                    fontWeight: "800",
-                    marginTop: "10px",
-                  }}
-                >
-                  Connect With The Crew
-                </h2>
-                <div
-                  style={{
-                    width: "60px",
-                    height: "3px",
-                    background: brandRed,
-                    margin: "15px auto",
-                  }}
-                ></div>
-              </div>
-
+          <div className="col-lg-6">
+            <div className="form-card-organic">
               <form onSubmit={handleSubmit}>
-                <div className="row g-4">
+                <div className="row g-3">
                   <div className="col-md-6">
+                    <label className="organic-label">Full Name</label>
                     <input
+                      className="organic-input"
                       type="text"
-                      name="fullName"
+                      placeholder="John Doe"
                       value={formData.fullName}
-                      onChange={handleChange}
-                      className="input-custom"
-                      placeholder="Full Name"
+                      onChange={(e) =>
+                        setFormData({ ...formData, fullName: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="col-md-6">
+                    <label className="organic-label">Phone</label>
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-custom"
-                      placeholder="Email Address"
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      type="text"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      className="input-custom"
-                      placeholder="Subject"
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <input
-                      type="text"
-                      name="phone"
+                      className="organic-input"
+                      type="tel"
+                      placeholder="+91 00000 00000"
                       value={formData.phone}
-                      onChange={handleChange}
-                      className="input-custom"
-                      placeholder="Phone Number"
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="col-12">
+                    <label className="organic-label">Email</label>
+                    <input
+                      className="organic-input"
+                      type="email"
+                      placeholder="john@email.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="col-12">
+                    <label className="organic-label">Subject</label>
+                    <input
+                      className="organic-input"
+                      type="text"
+                      placeholder="How can we help?"
+                      value={formData.subject}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="col-12">
+                    <label className="organic-label">Message</label>
                     <textarea
-                      name="message"
+                      className="organic-input"
+                      rows="4"
+                      placeholder="Your message..."
                       value={formData.message}
-                      onChange={handleChange}
-                      className="input-custom"
-                      rows="5"
-                      placeholder="Your Message"
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       required
                     ></textarea>
                   </div>
-                  <div className="col-12 text-center">
+                  <div className="col-12">
                     <button
                       type="submit"
-                      className="btn-submit-custom"
-                      disabled={loading}
+                      className="btn-submit-organic"
+                      disabled={isSubmitting}
                     >
-                      <FiSend className="me-2" />{" "}
-                      {loading ? "SENDING..." : "SEND MESSAGE"}
+                      {isSubmitting ? "Sending..." : "Send Message"}{" "}
+                      <FiSend style={{ marginLeft: "8px" }} />
                     </button>
                   </div>
                 </div>
@@ -250,26 +174,21 @@ const ContactSection = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        .contact-card-custom { background: #fff; padding: 40px 20px; border-radius: 15px; text-align: center; transition: all 0.3s ease; border: 1px solid #eee; }
-        .contact-card-custom:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(222, 67, 63, 0.05); border-color: ${brandRed}; }
-        .icon-box { width: 70px; height: 70px; background: rgba(222, 67, 63, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; transition: 0.3s; }
-        .contact-card-custom:hover .icon-box { background: ${brandRed}; color: #fff !important; }
-        .form-wrapper-custom { background: #fff; padding: 60px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
-        .input-custom { width: 100%; padding: 15px 20px; border: 1px solid #e1e1e1; border-radius: 8px; background: #fcfcfc; transition: 0.3s; outline: none; }
-        .input-custom:focus { border-color: ${brandRed}; background: #fff; box-shadow: 0 5px 15px rgba(222, 67, 63, 0.05); }
-        .btn-submit-custom { background: ${brandRed}; color: white; padding: 16px 45px; border: none; border-radius: 50px; font-weight: 700; letter-spacing: 1px; transition: 0.3s; margin-top: 20px; cursor: pointer; }
-        .btn-submit-custom:hover { background: #c53a36; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .btn-submit-custom:disabled { background: #ccc; cursor: not-allowed; }
-        @media (max-width: 768px) { .form-wrapper-custom { padding: 30px 20px; } }
+        .contact-info-organic { background: #fff; border: 1px solid ${borderGreen}; border-radius: 20px; padding: 30px; }
+        .info-block { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #f0f4f0; }
+        .icon-circle { width: 45px; height: 45px; border-radius: 12px; background: rgba(64,126,24,0.08); color: ${organicGreen}; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .organic-label { font-size: 12px; font-weight: 800; color: ${deepForest}; margin-bottom: 5px; text-transform: uppercase; }
+        .organic-input { width: 100%; padding: 12px 15px; border: 1px solid ${borderGreen}; border-radius: 10px; background: ${lightBg}; outline: none; }
+        .btn-submit-organic { background: ${organicGreen}; color: #fff; border: none; padding: 14px 30px; border-radius: 50px; font-weight: 600; width: 100%; cursor: pointer; }
       `,
         }}
       />
-    </div>
+    </section>
   );
 };
 

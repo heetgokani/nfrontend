@@ -23,7 +23,13 @@ import {
   FaFileInvoice,
 } from "react-icons/fa6";
 import { BiSolidCategory } from "react-icons/bi";
-import { FaEnvelope, FaQuestionCircle, FaClipboardList } from "react-icons/fa"; // IMPORTED ClipboardList for Orders
+import {
+  FaEnvelope,
+  FaQuestionCircle,
+  FaClipboardList,
+  FaCog,
+  FaCreditCard,
+} from "react-icons/fa"; // Added FaCreditCard
 import { toast, ToastContainer } from "react-toastify";
 
 import CreateRole from "./CreateRole";
@@ -34,21 +40,21 @@ import CreateProduct from "./CreateProduct";
 import CreateCategory from "./CreateCategory";
 import CreateAttribute from "./CreateAttribute";
 import CreateBrand from "./CreateBrand";
-import { FaComments } from "react-icons/fa"; // Add this to your react-icons/fa imports
-import CreateChat from "./CreateChat"; // IMPORTED MANAGE CHAT COMPONENT// IMPORTED MANAGE ORDERS COMPONENT
+import { FaComments } from "react-icons/fa";
+
 import CreateStock from "./CreateStock";
 import CreateGst from "./CreateGst";
-import CreateUpdateProduct from "./CreateUpdateProduct";
-import CreateTags from "./CreateTags";
-import CreatePriceUpdate from "./CreatePriceUpdate";
+
 import Createfaq from "./Createfaq";
 import CreateContact from "./CreateContact";
 import ManageReviews from "./ManageReviews";
 import CreateCoupon from "./CreateCoupon";
-import CreateOrder from "./CreateOrder"; // IMPORTED MANAGE ORDERS COMPONENT
+import CreateOrder from "./CreateOrder";
 import CreateInvoice from "./CreateInvoice";
 import ManageShipping from "./ManageShipping";
 import "./Crashed.css";
+import EmailSettings from "./EmailSettings";
+import PaymentSettings from "./PaymentSettings"; // <--- IMPORTED PAYMENT SETTINGS
 
 // Access Denied Fallback UI
 const AccessDenied = () => (
@@ -94,7 +100,7 @@ const Crashed = () => {
   const [openProductMenu, setOpenProductMenu] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(
-    window.innerWidth > 768
+    window.innerWidth > 768,
   );
 
   const [editingProduct, setEditingProduct] = useState(null);
@@ -109,30 +115,24 @@ const Crashed = () => {
     permissions?.products?.add || permissions?.products?.view;
   const canShowCategoryControl =
     permissions?.category?.add || permissions?.category?.view;
-  // NEW: Shipping Permission (Checking the 'ship' key from your schema)
   const canShowShipControl = permissions?.ship?.view || permissions?.ship?.add;
   const canShowStockControl =
     permissions?.stock?.view || permissions?.stock?.add;
   const canShowGstControl = permissions?.gst?.view || permissions?.gst?.add;
-  const canShowBulkUpdate =
-    permissions?.products?.edit || permissions?.products?.add;
+
   const canShowContactControl = permissions?.contact?.view;
   const canShowFaqControl = permissions?.faq?.view;
 
-  const canShowChatControl =
-    permissions?.ticket?.view || permissions?.ticket?.edit;
-  // FIXED: Removed product fallbacks. Now these STRICTLY check their own permissions
-  const canShowTagsControl = permissions?.tags?.view || permissions?.tags?.add;
   const canShowCouponControl =
     permissions?.coupon?.view || permissions?.coupon?.add;
   const canShowReviewsControl =
     permissions?.reviews?.view || permissions?.reviews?.add;
 
-  // NEW: Orders Permission (Checking the 'order' key from your schema)
   const canShowOrderControl =
     permissions?.order?.view || permissions?.order?.edit;
   const canShowInvoiceControl =
     permissions?.invoice?.view || permissions?.invoice?.add;
+
   useEffect(() => {
     if (!auth?.user) navigate("/login");
   }, [auth, navigate]);
@@ -140,10 +140,10 @@ const Crashed = () => {
   useEffect(() => {
     if (auth?.user && canShowStockControl) {
       axios
-        .get("https://demo-backend-k0yn.onrender.com/api/stock/all")
+        .get("http://localhost:5000/api/stock/all")
         .then((res) => {
           const lowStock = res.data.filter(
-            (item) => Number(item.stock) < 3
+            (item) => Number(item.stock) < 3,
           ).length;
           setLowStockCount(lowStock);
         })
@@ -175,7 +175,7 @@ const Crashed = () => {
     if (!productId) return toast.error("Product ID missing");
     try {
       const res = await axios.get(
-        `https://demo-backend-k0yn.onrender.com/api/products/${productId}`
+        `http://localhost:5000/api/products/${productId}`,
       );
       const p = res.data.product;
 
@@ -194,7 +194,27 @@ const Crashed = () => {
       toast.error("Failed to fetch product details for editing.");
     }
   };
+  // Inside Crashed component
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const [newContactCount, setNewContactCount] = useState(0);
 
+  useEffect(() => {
+    // Fetch New Orders (Assuming an endpoint that returns pending/new orders)
+    if (auth?.user && canShowOrderControl) {
+      axios
+        .get("http://localhost:5000/api/orders/new-count") // Adjust endpoint to your API
+        .then((res) => setNewOrderCount(res.data.count))
+        .catch((err) => console.error("Error fetching orders:", err));
+    }
+
+    // Fetch New Contact Messages
+    if (auth?.user && canShowContactControl) {
+      axios
+        .get("http://localhost:5000/api/contact/new-count") // Adjust endpoint to your API
+        .then((res) => setNewContactCount(res.data.count))
+        .catch((err) => console.error("Error fetching contacts:", err));
+    }
+  }, [auth, canShowOrderControl, canShowContactControl]);
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
@@ -244,10 +264,7 @@ const Crashed = () => {
         );
       case "create-brand":
         return permissions?.products?.add ? <CreateBrand /> : <AccessDenied />;
-      case "manage-tags":
-        return canShowTagsControl ? <CreateTags /> : <AccessDenied />;
-      case "bulk-price-update":
-        return canShowBulkUpdate ? <CreatePriceUpdate /> : <AccessDenied />;
+
       case "manage-stock":
         return canShowStockControl ? (
           <CreateStock onEditProduct={handleEditFromStock} />
@@ -256,12 +273,6 @@ const Crashed = () => {
         );
       case "manage-gst":
         return canShowGstControl ? <CreateGst /> : <AccessDenied />;
-      case "bulk-update":
-        return canShowBulkUpdate ? (
-          <CreateUpdateProduct onEditProduct={handleEditFromStock} />
-        ) : (
-          <AccessDenied />
-        );
 
       case "contact-messages":
         return canShowContactControl ? <CreateContact /> : <AccessDenied />;
@@ -274,11 +285,16 @@ const Crashed = () => {
       case "manage-shipping":
         return canShowShipControl ? <ManageShipping /> : <AccessDenied />;
       case "manage-orders":
-        return canShowOrderControl ? <CreateOrder /> : <AccessDenied />; // NEW ROUTE
-      case "manage-chat":
-        return canShowChatControl ? <CreateChat /> : <AccessDenied />;
+        return canShowOrderControl ? <CreateOrder /> : <AccessDenied />;
+
       case "manage-invoices":
         return canShowInvoiceControl ? <CreateInvoice /> : <AccessDenied />;
+      case "email-settings":
+        return canShowAccessControl ? <EmailSettings /> : <AccessDenied />;
+      // --- ADDED PAYMENT SETTINGS CASE ---
+      case "payment-settings":
+        return canShowAccessControl ? <PaymentSettings /> : <AccessDenied />;
+      // -----------------------------------
       default:
         return <div>Loading Module...</div>;
     }
@@ -415,74 +431,30 @@ const Crashed = () => {
             <FaChartPie /> Dashboard
           </div>
 
-          {/* NEW ORDERS TAB ADDED TO SIDEBAR */}
           {canShowOrderControl && (
             <div
               style={styles.navItem(activePage === "manage-orders")}
-              onClick={() => {
-                setActivePage("manage-orders");
-                if (window.innerWidth <= 768) setIsSidebarVisible(false);
-              }}
+              onClick={() => setActivePage("manage-orders")}
             >
-              <FaClipboardList /> Manage Orders
+              <FaClipboardList />
+              <span style={{ flex: 1 }}>Manage Orders</span>
+              {newOrderCount > 0 && (
+                <span
+                  style={{
+                    background: "#ef4444",
+                    color: "white",
+                    padding: "2px 8px",
+                    borderRadius: "12px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {newOrderCount}
+                </span>
+              )}
             </div>
           )}
 
-          {canShowAccessControl && (
-            <>
-              <div
-                style={styles.navItem(openUserMenu)}
-                onClick={() => setOpenUserMenu(!openUserMenu)}
-              >
-                <FaUserShield /> <span style={{ flex: 1 }}>Access Control</span>
-                {openUserMenu ? (
-                  <FaChevronDown size={10} />
-                ) : (
-                  <FaChevronRight size={10} />
-                )}
-              </div>
-              {openUserMenu && (
-                <div style={{ background: "rgba(0,0,0,0.1)" }}>
-                  {permissions?.role?.add && (
-                    <div
-                      style={styles.subItem(activePage === "create-role")}
-                      onClick={() => {
-                        setActivePage("create-role");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaPlus size={10} /> Create Role
-                    </div>
-                  )}
-                  {permissions?.role?.view && (
-                    <div
-                      style={styles.subItem(activePage === "view-role")}
-                      onClick={() => {
-                        setActivePage("view-role");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaRegEye size={10} /> View Roles
-                    </div>
-                  )}
-                  {permissions?.role?.add && (
-                    <div
-                      style={styles.subItem(activePage === "create-user")}
-                      onClick={() => {
-                        setActivePage("create-user");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaPlus size={10} /> Create User
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
 
           {canShowProductControl && (
             <>
@@ -523,43 +495,7 @@ const Crashed = () => {
                       <FaPlus size={10} /> Brands
                     </div>
                   )}
-                  {/* NEW CHAT TAB ADDED TO SIDEBAR */}
-                  {canShowChatControl && (
-                    <div
-                      style={styles.navItem(activePage === "manage-chat")}
-                      onClick={() => {
-                        setActivePage("manage-chat");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaComments /> Manage Chat
-                    </div>
-                  )}
-                  {canShowTagsControl && (
-                    <div
-                      style={styles.subItem(activePage === "manage-tags")}
-                      onClick={() => {
-                        setActivePage("manage-tags");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaTags size={10} /> Manage Tags
-                    </div>
-                  )}
-                  {canShowBulkUpdate && (
-                    <div
-                      style={styles.subItem(activePage === "bulk-price-update")}
-                      onClick={() => {
-                        setActivePage("bulk-price-update");
-                        if (window.innerWidth <= 768)
-                          setIsSidebarVisible(false);
-                      }}
-                    >
-                      <FaBolt size={10} /> Price Update
-                    </div>
-                  )}
+
                   {permissions?.products?.add && (
                     <div
                       style={styles.subItem(activePage === "create-products")}
@@ -662,7 +598,6 @@ const Crashed = () => {
               <FaFileInvoice /> Manage Invoices
             </div>
           )}
-          {/* SHIPPING TAB ADDED TO SIDEBAR */}
           {canShowShipControl && (
             <div
               style={styles.navItem(activePage === "manage-shipping")}
@@ -674,27 +609,28 @@ const Crashed = () => {
               <FaTruck /> Manage Shipping
             </div>
           )}
-          {canShowBulkUpdate && (
-            <div
-              style={styles.navItem(activePage === "bulk-update")}
-              onClick={() => {
-                setActivePage("bulk-update");
-                if (window.innerWidth <= 768) setIsSidebarVisible(false);
-              }}
-            >
-              <FaFileExcel /> Bulk Update Products
-            </div>
-          )}
 
           {canShowContactControl && (
             <div
               style={styles.navItem(activePage === "contact-messages")}
-              onClick={() => {
-                setActivePage("contact-messages");
-                if (window.innerWidth <= 768) setIsSidebarVisible(false);
-              }}
+              onClick={() => setActivePage("contact-messages")}
             >
-              <FaEnvelope /> Contact Messages
+              <FaEnvelope />
+              <span style={{ flex: 1 }}>Contact Messages</span>
+              {newContactCount > 0 && (
+                <span
+                  style={{
+                    background: "#ef4444",
+                    color: "white",
+                    padding: "2px 8px",
+                    borderRadius: "12px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {newContactCount}
+                </span>
+              )}
             </div>
           )}
 
@@ -733,6 +669,32 @@ const Crashed = () => {
               <FaStar /> Manage Reviews
             </div>
           )}
+
+          {canShowAccessControl && (
+            <div
+              style={styles.navItem(activePage === "email-settings")}
+              onClick={() => {
+                setActivePage("email-settings");
+                if (window.innerWidth <= 768) setIsSidebarVisible(false);
+              }}
+            >
+              <FaEnvelope /> Email Settings
+            </div>
+          )}
+
+          {/* --- ADDED PAYMENT SETTINGS SIDEBAR TAB --- */}
+          {canShowAccessControl && (
+            <div
+              style={styles.navItem(activePage === "payment-settings")}
+              onClick={() => {
+                setActivePage("payment-settings");
+                if (window.innerWidth <= 768) setIsSidebarVisible(false);
+              }}
+            >
+              <FaCreditCard /> Payment Settings
+            </div>
+          )}
+          {/* ------------------------------------------ */}
         </div>
       </aside>
 

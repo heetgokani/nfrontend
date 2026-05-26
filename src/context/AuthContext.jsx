@@ -38,9 +38,7 @@ const AuthProvider = ({ children }) => {
     // we don't strictly require auth.token here.
     setProductsLoading(true);
     try {
-      const res = await axios.get(
-        "https://demo-backend-k0yn.onrender.com/api/products"
-      );
+      const res = await axios.get("http://localhost:5000/api/products");
       // Note: Your backend /api/products doesn't populate variants by default.
       // If you updated your backend to return variants here, this will store them perfectly.
       setProducts(res.data);

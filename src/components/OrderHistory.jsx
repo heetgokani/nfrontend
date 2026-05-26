@@ -1,15 +1,28 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; // Added for redirection
+import { useAuth } from "../context/AuthContext"; // Added for auth check
 // ADDED FiDownload TO THIS IMPORT
 import { FiStar, FiX, FiCheckCircle, FiDownload } from "react-icons/fi";
 
-const API_URL = "https://demo-backend-k0yn.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // --- AUTH HOOKS ---
+  const { auth } = useAuth();
+  const navigate = useNavigate();
+
+  // --- FORCE REDIRECT IF NOT LOGGED IN ---
+  useEffect(() => {
+    if (!auth) {
+      navigate("/login");
+    }
+  }, [auth, navigate]);
 
   // Track reviewed items to prevent duplicate reviews in the same session
   const [reviewedItems, setReviewedItems] = useState(new Set());
@@ -28,6 +41,9 @@ const OrderHistory = () => {
   const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
+    // Only fetch if authenticated
+    if (!auth) return;
+
     const fetchOrders = async () => {
       try {
         const { data } = await axios.get(`${API_URL}/api/orders/myorders`, {
@@ -41,7 +57,7 @@ const OrderHistory = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [auth]);
 
   // --- NEW: INVOICE DOWNLOAD HANDLER ---
   const handleDownloadInvoice = async (orderId, orderNumber) => {
@@ -53,7 +69,7 @@ const OrderHistory = () => {
         {
           withCredentials: true,
           responseType: "blob", // Important for binary PDF data
-        }
+        },
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -86,19 +102,22 @@ const OrderHistory = () => {
       return toast.error("Please select a star rating");
 
     try {
+      // Clean the ID by removing anything after a colon (e.g., stripping ":1")
+      const cleanVariantId = reviewData.variantId.split(":")[0];
+
       const response = await axios.post(
-        `${API_URL}/api/reviews/${reviewData.variantId}`,
+        `${API_URL}/api/reviews/${cleanVariantId}`, // Use the cleaned ID here
         {
           rating: reviewData.rating,
           comment: reviewData.comment,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (response.data.success) {
         toast.success("Review submitted for approval!");
 
-        // Mark as reviewed to disable the button
+        // Mark as reviewed to disable the button using the original ID
         setReviewedItems((prev) => new Set(prev).add(reviewData.variantId));
 
         setShowReviewModal(false);
@@ -113,7 +132,6 @@ const OrderHistory = () => {
       toast.error(error.response?.data?.message || "Error submitting review");
     }
   };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending":
@@ -161,8 +179,8 @@ const OrderHistory = () => {
           
           /* Nice Desktop Button */
           .view-details-btn-desktop {
-            border: 1px solid #de433f;
-            color: #de433f;
+            border: 1px solid #407e18;
+            color: #407e18;
             background-color: #fff;
             padding: 6px 16px;
             border-radius: 4px;
@@ -170,7 +188,7 @@ const OrderHistory = () => {
             transition: 0.3s;
           }
           .view-details-btn-desktop:hover {
-            background-color: #de433f;
+            background-color: #407e18;
             color: #fff;
           }
 
@@ -199,7 +217,7 @@ const OrderHistory = () => {
           /* Premium Mobile Button */
           .view-details-btn-mobile {
             width: 100%;
-            background-color: #de433f;
+            background-color: #407e18;
             color: white;
             border: none;
             padding: 12px;
@@ -209,17 +227,17 @@ const OrderHistory = () => {
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(222, 67, 63, 0.2);
+            box-shadow: 0 4px 10px rgba(100, 222, 63, 0.2);
           }
           .view-details-btn-mobile:hover {
-            background-color: #c53b38;
+            background-color: #407e18;
           }
 
           /* RATE PRODUCT BUTTON STYLE */
           .rate-product-btn {
             background: rgba(222, 67, 63, 0.05);
-            border: 1px solid #de433f;
-            color: #de433f;
+            border: 1px solid #407e18;
+            color: #407e18;
             font-size: 11px;
             font-weight: 700;
             padding: 6px 14px;
@@ -231,9 +249,9 @@ const OrderHistory = () => {
             letter-spacing: 0.5px;
           }
           .rate-product-btn:hover {
-            background: #de433f;
+            background: #407e18;
             color: #fff;
-            box-shadow: 0 3px 8px rgba(222, 67, 63, 0.3);
+            box-shadow: 0 3px 8px rgba(9, 128, 39, 0.3);
           }
           
           .rate-product-btn:disabled {
@@ -257,7 +275,7 @@ const OrderHistory = () => {
           .star-container { display: flex; gap: 8px; justify-content: center; margin: 15px 0; }
           .star-btn { background: none; border: none; cursor: pointer; padding: 0; }
           .star-icon { color: #ccc; transition: 0.2s; }
-          .star-icon.filled { color: #de433f; fill: #de433f; }
+          .star-icon.filled { color: #407e18; fill: #407e18; }
           .review-textarea { width: 100%; border: 1px solid #eee; border-radius: 8px; padding: 12px; min-height: 100px; outline: none; }
           
           /* Responsive Toggles */
@@ -290,7 +308,7 @@ const OrderHistory = () => {
             background: none; border: none; font-size: 28px;
             line-height: 1; cursor: pointer; color: #555; transition: color 0.2s;
           }
-          .close-modal-btn:hover { color: #de433f; }
+          .close-modal-btn:hover { color: #407e18; }
 
           /* Modal Body Grid */
           .order-modal-body {
@@ -298,7 +316,7 @@ const OrderHistory = () => {
           }
           .order-section-title {
             font-size: 16px; font-weight: 600; margin-bottom: 16px;
-            color: #333; border-bottom: 2px solid #de433f;
+            color: #333; border-bottom: 2px solid #407e18;
             padding-bottom: 8px; display: inline-block;
           }
           
@@ -374,7 +392,7 @@ const OrderHistory = () => {
               <a
                 href="/shop"
                 className="btn text-white px-4 py-2"
-                style={{ backgroundColor: "#de433f", borderRadius: "4px" }}
+                style={{ backgroundColor: "#407e18", borderRadius: "4px" }}
               >
                 Start Shopping
               </a>
@@ -423,7 +441,7 @@ const OrderHistory = () => {
                         </td>
                         <td
                           className="fw-bold"
-                          style={{ color: "#de433f", fontSize: "16px" }}
+                          style={{ color: "#407e18", fontSize: "16px" }}
                         >
                           ₹{order.totalPrice?.toFixed(2)}
                         </td>
@@ -432,7 +450,7 @@ const OrderHistory = () => {
                             className="badge rounded-pill px-3 py-2 text-white"
                             style={{
                               backgroundColor: getStatusColor(
-                                order.orderStatus
+                                order.orderStatus,
                               ),
                               fontSize: "12px",
                               fontWeight: "500",
@@ -442,7 +460,6 @@ const OrderHistory = () => {
                           </span>
                         </td>
                         <td>
-                          {/* FLEX CONTAINER TO HOLD BOTH BUTTONS CLEANLY */}
                           <div
                             style={{
                               display: "flex",
@@ -457,12 +474,11 @@ const OrderHistory = () => {
                               View Details
                             </button>
 
-                            {/* TINY ICON BUTTON FOR DESKTOP */}
                             <button
                               onClick={() =>
                                 handleDownloadInvoice(
                                   order._id,
-                                  order.orderNumber
+                                  order.orderNumber,
                                 )
                               }
                               disabled={downloadingId === order._id}
@@ -531,7 +547,7 @@ const OrderHistory = () => {
                       <div className="text-end">
                         <div
                           className="fw-bold"
-                          style={{ color: "#de433f", fontSize: "18px" }}
+                          style={{ color: "#407e18", fontSize: "18px" }}
                         >
                           ₹{order.totalPrice?.toFixed(2)}
                         </div>
@@ -546,7 +562,6 @@ const OrderHistory = () => {
                       </div>
                     </div>
 
-                    {/* WRAPPED MOBILE BUTTONS IN A FLEX ROW SO THEY SIT CLEANLY */}
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button
                         className="view-details-btn-mobile"
@@ -556,7 +571,6 @@ const OrderHistory = () => {
                         View Details
                       </button>
 
-                      {/* SMALL SQUARE ICON BUTTON FOR MOBILE */}
                       <button
                         onClick={() =>
                           handleDownloadInvoice(order._id, order.orderNumber)
@@ -600,7 +614,7 @@ const OrderHistory = () => {
             <div className="order-modal-header">
               <h4 className="m-0" style={{ color: "#333", fontWeight: "700" }}>
                 Order{" "}
-                <span style={{ color: "#de433f" }}>
+                <span style={{ color: "#407e18" }}>
                   {selectedOrder.orderNumber ||
                     selectedOrder._id.substring(0, 8)}
                 </span>
@@ -682,7 +696,7 @@ const OrderHistory = () => {
                           style={{
                             fontSize: "16px",
                             fontWeight: "700",
-                            color: "#de433f",
+                            color: "#407e18",
                           }}
                         >
                           ₹{(item.price * item.quantity).toFixed(2)}
@@ -848,7 +862,7 @@ const OrderHistory = () => {
                     <strong style={{ fontSize: "16px", color: "#333" }}>
                       Total Amount
                     </strong>
-                    <strong style={{ fontSize: "20px", color: "#de433f" }}>
+                    <strong style={{ fontSize: "20px", color: "#407e18" }}>
                       ₹{selectedOrder.totalPrice?.toFixed(2)}
                     </strong>
                   </div>
@@ -859,7 +873,7 @@ const OrderHistory = () => {
         </div>
       )}
 
-      {/* --- INSERTED: ADD REVIEW MODAL --- */}
+      {/* --- ADD REVIEW MODAL --- */}
       {showReviewModal && (
         <div className="order-modal-overlay" style={{ zIndex: 10000 }}>
           <div
@@ -870,7 +884,7 @@ const OrderHistory = () => {
             <div className="order-modal-header">
               <h5 className="m-0">
                 Rate{" "}
-                <span style={{ color: "#de433f" }}>
+                <span style={{ color: "#407e18" }}>
                   {reviewData.productName}
                 </span>
               </h5>

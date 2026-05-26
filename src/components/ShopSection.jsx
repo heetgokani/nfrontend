@@ -36,12 +36,12 @@ const ShopSection = () => {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
-          axios.get("https://demo-backend-k0yn.onrender.com/api/products/"),
+          axios.get("http://localhost:5000/api/category/all"),
+          axios.get("http://localhost:5000/api/products/"),
         ]);
         setCategoriesList(catRes.data);
         const activeProducts = prodRes.data.filter(
-          (p) => p.status !== "Inactive"
+          (p) => p.status !== "Inactive",
         );
         setProducts(activeProducts);
 
@@ -132,13 +132,13 @@ const ShopSection = () => {
           product.category.includes(",")
         ) {
           pIdsAndTitles.push(
-            ...product.category.split(",").map((c) => c.trim())
+            ...product.category.split(",").map((c) => c.trim()),
           );
         }
 
         const pIdsLower = pIdsAndTitles.map((id) => id?.toLowerCase() || "");
         const matchesCategory = selectedCats.some((sel) =>
-          pIdsLower.includes(sel.toLowerCase())
+          pIdsLower.includes(sel.toLowerCase()),
         );
 
         if (!matchesCategory) return false;
@@ -172,7 +172,7 @@ const ShopSection = () => {
           ?.flatMap((v) =>
             v.attributes
               ?.filter((a) => a.name?.toLowerCase() === "size")
-              .map((a) => a.value)
+              .map((a) => a.value),
           )
           .filter(Boolean);
 
@@ -225,7 +225,7 @@ const ShopSection = () => {
 
   const toggleFilter = (list, setList, item) => {
     setList((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
     );
     setVisibleLimit(6);
   };
@@ -235,7 +235,7 @@ const ShopSection = () => {
     setExpandedCats((prev) =>
       prev.includes(catId)
         ? prev.filter((id) => id !== catId)
-        : [...prev, catId]
+        : [...prev, catId],
     );
   };
 
@@ -267,7 +267,7 @@ const ShopSection = () => {
               <div className="filter-card shadow-sm">
                 <div className="filter-main-header d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-2">
-                    <FiFilter size={18} color="#de433f" />
+                    <FiFilter size={18} color="#407e18" />
                     <h5 className="m-0 fw-bold text-uppercase">
                       Browse Filters
                     </h5>
@@ -308,7 +308,7 @@ const ShopSection = () => {
                                 toggleFilter(
                                   selectedCats,
                                   setSelectedCats,
-                                  cat._id
+                                  cat._id,
                                 )
                               }
                             >
@@ -325,7 +325,7 @@ const ShopSection = () => {
                                       width: "18px",
                                       height: "18px",
                                       background: expandedCats.includes(cat._id)
-                                        ? "#de433f"
+                                        ? "#407e18"
                                         : "#f1f5f9",
                                       color: expandedCats.includes(cat._id)
                                         ? "#fff"
@@ -379,7 +379,7 @@ const ShopSection = () => {
                                         toggleFilter(
                                           selectedCats,
                                           setSelectedCats,
-                                          sub._id
+                                          sub._id,
                                         )
                                       }
                                     >
@@ -419,162 +419,10 @@ const ShopSection = () => {
                   </div>
 
                   {/* ADDED: BRANDS FILTER */}
-                  <div className="filter-section">
-                    <div
-                      className="section-header"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#brands"
-                    >
-                      <span>Brands</span>
-                      <div className="d-flex align-items-center gap-2">
-                        {selectedBrands.length > 0 && (
-                          <span className="active-badge">
-                            {selectedBrands.length} active
-                          </span>
-                        )}
-                        <FiPlus />
-                      </div>
-                    </div>
-                    <div id="brands" className="collapse">
-                      <div className="section-body pb-3">
-                        {availableBrands.map((brand, idx) => (
-                          <div
-                            key={idx}
-                            className="filter-row d-flex align-items-center justify-content-between"
-                            onClick={() =>
-                              toggleFilter(
-                                selectedBrands,
-                                setSelectedBrands,
-                                brand
-                              )
-                            }
-                          >
-                            <span
-                              className={
-                                selectedBrands.includes(brand)
-                                  ? "text-danger fw-bold text-capitalize"
-                                  : "text-muted text-capitalize"
-                              }
-                              style={{ fontSize: "13px" }}
-                            >
-                              {brand}
-                            </span>
-                            <div
-                              className={`custom-check ${
-                                selectedBrands.includes(brand) ? "checked" : ""
-                              }`}
-                            >
-                              {selectedBrands.includes(brand) && (
-                                <FiCheck size={12} />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* COLORS */}
-                  <div className="filter-section">
-                    <div
-                      className="section-header"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#colors"
-                    >
-                      <span>Colors</span>
-                      <div className="d-flex align-items-center gap-2">
-                        {selectedColors.length > 0 && (
-                          <span className="active-badge">
-                            {selectedColors.length} active
-                          </span>
-                        )}
-                        <FiPlus />
-                      </div>
-                    </div>
-                    <div id="colors" className="collapse">
-                      <div className="section-body d-flex flex-wrap gap-2 pb-3">
-                        {availableColors.map((color, idx) => {
-                          const cssColor = getCssColor(color);
-                          const isWhite =
-                            cssColor === "white" || cssColor === "#ffffff";
-
-                          return (
-                            <div
-                              key={idx}
-                              className={`color-box ${
-                                selectedColors.includes(color) ? "active" : ""
-                              }`}
-                              style={{
-                                backgroundColor: cssColor,
-                                border: isWhite
-                                  ? "1px solid #ccc"
-                                  : "1px solid #eee",
-                              }}
-                              onClick={() =>
-                                toggleFilter(
-                                  selectedColors,
-                                  setSelectedColors,
-                                  color
-                                )
-                              }
-                            >
-                              {selectedColors.includes(color) && (
-                                <FiCheck
-                                  color={isWhite ? "#000" : "#fff"}
-                                  size={14}
-                                  style={{
-                                    filter: isWhite
-                                      ? "none"
-                                      : "drop-shadow(0 0 2px rgba(0,0,0,0.5))",
-                                  }}
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* SIZES */}
-                  <div className="filter-section">
-                    <div
-                      className="section-header"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#sizes"
-                    >
-                      <span>Sizes</span>
-                      <div className="d-flex align-items-center gap-2">
-                        {selectedSizes.length > 0 && (
-                          <span className="active-badge">
-                            {selectedSizes.length} active
-                          </span>
-                        )}
-                        <FiPlus />
-                      </div>
-                    </div>
-                    <div id="sizes" className="collapse">
-                      <div className="section-body d-flex flex-wrap gap-2 pb-3">
-                        {availableSizes.map((size, idx) => (
-                          <div
-                            key={idx}
-                            className={`size-pill ${
-                              selectedSizes.includes(size) ? "active" : ""
-                            }`}
-                            onClick={() =>
-                              toggleFilter(
-                                selectedSizes,
-                                setSelectedSizes,
-                                size
-                              )
-                            }
-                          >
-                            {size}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
 
                   {/* PRICE RANGE */}
                   <div className="filter-section">
@@ -643,11 +491,24 @@ const ShopSection = () => {
             <div className="d-flex align-items-end mb-4 border-bottom pb-4">
               <h2
                 className="fw-bold m-0"
-                style={{ color: "#333", fontSize: "24px" }}
+                style={{
+                  background: "linear-gradient(135deg, #3c7d24, #407e18)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  fontSize: "24px",
+                }}
               >
-                All products
+                All Products
               </h2>
-              <span className="ms-2 text-muted" style={{ fontSize: "14px" }}>
+
+              <span
+                className="ms-2"
+                style={{
+                  color: "#407e18",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                }}
+              >
                 ({filteredProducts.length} results)
               </span>
             </div>
@@ -684,9 +545,15 @@ const ShopSection = () => {
       </div>
 
       {/* FIX: Added Bootstrap d-lg-none class to absolutely kill it on desktop */}
+      {/* FIX: Added Bootstrap d-lg-none class to absolutely kill it on desktop */}
       <button
         className="mobile-filter-btn d-lg-none d-flex"
         onClick={() => setShowMobileSidebar(true)}
+        style={{
+          backgroundColor: "#407e18",
+          color: "#fff",
+          border: "none",
+        }}
       >
         <FiFilter size={18} /> Filters
       </button>
@@ -702,19 +569,19 @@ const ShopSection = () => {
         .section-header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #444; }
         .section-body { padding: 0 20px 12px 20px; }
         .filter-row { display: flex; align-items: center; padding: 6px 0; cursor: pointer; font-size: 13px; transition: 0.2s; }
-        .filter-row:hover { color: #de433f; }
-        .active-badge { background: #de433f; color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; }
+        .filter-row:hover { color: #407e18; }
+        .active-badge { background: #407e18; color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; }
         .custom-check { width: 16px; height: 16px; border: 1px solid #ddd; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #fff; }
-        .custom-check.checked { background: #de433f; border-color: #de433f; }
+        .custom-check.checked { background: #407e18; border-color: #407e18; }
         .price-input { width: 100%; border: 1px solid #eee; border-radius: 4px; padding: 6px 10px; font-size: 12px; outline: none; }
-        .price-input:focus { border-color: #de433f; }
-        .clear-all-btn { width: calc(100% - 40px); margin: 15px 20px; padding: 8px; border: 1px solid #de433f; background: #de433f; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 700; transition: 0.3s; }
-        .clear-all-btn:hover { background: #fff; color: #de433f; }
-        .text-danger { color: #de433f !important; }
+        .price-input:focus { border-color: #407e18; }
+        .clear-all-btn { width: calc(100% - 40px); margin: 15px 20px; padding: 8px; border: 1px solid #407e18; background: #407e18; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 700; transition: 0.3s; }
+        .clear-all-btn:hover { background: #fff; color: #407e18; }
+        .text-danger { color: #407e18 !important; }
         .color-box { width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .color-box.active { transform: scale(1.1); box-shadow: 0 0 0 2px #fff, 0 0 0 2px #de433f !important; border-color: transparent !important; }
+        .color-box.active { transform: scale(1.1); box-shadow: 0 0 0 2px #fff, 0 0 0 2px #407e18 !important; border-color: transparent !important; }
         .size-pill { padding: 4px 10px; border: 1px solid #eee; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .size-pill.active { background: #de433f; color: #fff; border-color: #de433f; }
+        .size-pill.active { background: #407e18; color: #fff; border-color: #407e18; }
         
         @media (max-width: 1000px) {
           .filter-wrapper {

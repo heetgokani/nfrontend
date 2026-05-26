@@ -25,7 +25,6 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
   // Store fetched GST and Tags
   const [gstRates, setGstRates] = useState({ SGST: [], CGST: [] });
-  const [tagsList, setTagsList] = useState([]); // NEW TAGS STATE
 
   const [product, setProduct] = useState({
     title: "",
@@ -54,25 +53,20 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
   const [showAttrDropdown, setShowAttrDropdown] = useState(false);
   const attrSearchRef = useRef(null);
 
-  // NEW: State to hold copied images for pasting across variants
   const [copiedImages, setCopiedImages] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catRes, brandRes, attrRes, gstRes, tagRes] = await Promise.all([
-          axios.get("https://demo-backend-k0yn.onrender.com/api/category/all"),
-          axios.get("https://demo-backend-k0yn.onrender.com/api/brands"),
-          axios.get("https://demo-backend-k0yn.onrender.com/api/attributes"),
-          axios.get("https://demo-backend-k0yn.onrender.com/api/gst"),
-          axios
-            .get("https://demo-backend-k0yn.onrender.com/api/tags")
-            .catch(() => ({ data: [] })), // Safe fetch for Tags
+        const [catRes, brandRes, attrRes, gstRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/category/all"),
+          axios.get("http://localhost:5000/api/brands"),
+          axios.get("http://localhost:5000/api/attributes"),
+          axios.get("http://localhost:5000/api/gst"),
         ]);
         setCategoriesList(catRes.data);
         setBrandsList(brandRes.data);
         setGlobalAttributes(attrRes.data);
-        setTagsList(tagRes.data); // Set Tags
 
         // Map and set SGST and CGST
         const gstData = gstRes.data.data || gstRes.data;
@@ -87,15 +81,18 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             brand: editData.brand || "",
             category: editData.category || "",
             subcategory: editData.subcategory || "",
-            vendor: editData.vendor || "",
             status: editData.status || "Active",
           });
+
+          // Helper function to handle both local and Cloudinary image paths
+          const getImgUrl = (path) =>
+            path.startsWith("http") ? path : `http://localhost:5000${path}`;
 
           // Load Global Images
           const loadedGlobalImages = [null, null, null, null, null];
           if (editData.thumbnail) {
             loadedGlobalImages[0] = {
-              preview: `https://demo-backend-k0yn.onrender.com${editData.thumbnail}`,
+              preview: getImgUrl(editData.thumbnail),
               existingPath: editData.thumbnail,
             };
           }
@@ -103,7 +100,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             editData.gallery.forEach((gImg, idx) => {
               if (idx < 4)
                 loadedGlobalImages[idx + 1] = {
-                  preview: `https://demo-backend-k0yn.onrender.com${gImg}`,
+                  preview: getImgUrl(gImg),
                   existingPath: gImg,
                 };
             });
@@ -125,7 +122,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
               v.images.forEach((imgPath, idx) => {
                 if (imgPath && idx < 5) {
                   mappedImages[idx] = {
-                    preview: `https://demo-backend-k0yn.onrender.com${imgPath}`,
+                    preview: getImgUrl(imgPath),
                     existingPath: imgPath,
                   };
                 }
@@ -136,7 +133,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
               originalPrice: v.price || v.originalPrice || 0,
               sgst: v.sgst || "",
               cgst: v.cgst || "",
-              tag: v.tag || "", // Ensure tag is mapped for edit
+              tag: v.tag || "",
               images: mappedImages,
             };
           });
@@ -168,10 +165,10 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
 
   const availableAttributes = globalAttributes.filter(
-    (attr) => !productAttributes.some((pa) => pa.attribute._id === attr._id)
+    (attr) => !productAttributes.some((pa) => pa.attribute._id === attr._id),
   );
   const filteredAttributes = availableAttributes.filter((attr) =>
-    attr.name.toLowerCase().includes(attributeSearch.toLowerCase())
+    attr.name.toLowerCase().includes(attributeSearch.toLowerCase()),
   );
 
   const handleSelectAttribute = (attrObj) => {
@@ -191,7 +188,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     const currentSelected = updated[attrIndex].selectedTerms;
     if (currentSelected.includes(termValue))
       updated[attrIndex].selectedTerms = currentSelected.filter(
-        (v) => v !== termValue
+        (v) => v !== termValue,
       );
     else updated[attrIndex].selectedTerms.push(termValue);
     setProductAttributes(updated);
@@ -200,7 +197,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
   const handleSelectAll = (attrIndex) => {
     const updated = [...productAttributes];
     updated[attrIndex].selectedTerms = updated[attrIndex].attribute.terms.map(
-      (t) => t.value
+      (t) => t.value,
     );
     setProductAttributes(updated);
   };
@@ -238,13 +235,11 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     setVariants(updated);
   };
 
-  // NEW: Copy images from a specific variant
   const copyVariantImages = (vIndex) => {
     setCopiedImages([...variants[vIndex].images]);
     toast.info("Images copied! You can now paste them in another variation.");
   };
 
-  // NEW: Paste images to a specific variant
   const pasteVariantImages = (vIndex) => {
     if (!copiedImages) {
       return toast.warn("No images copied yet!");
@@ -257,11 +252,11 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
   const generateVariations = () => {
     const activeAttrs = productAttributes.filter(
-      (pa) => pa.selectedTerms.length > 0
+      (pa) => pa.selectedTerms.length > 0,
     );
     if (activeAttrs.length === 0)
       return toast.warn(
-        "Please select at least one attribute term before generating."
+        "Please select at least one attribute term before generating.",
       );
 
     const combine = (index, currentCombo) => {
@@ -275,7 +270,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             stock: "",
             sgst: "",
             cgst: "",
-            tag: "", // Default tag is empty
+            tag: "",
             attributes: currentCombo,
             images: [null, null, null, null, null],
           },
@@ -287,7 +282,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
       attrBlock.selectedTerms.forEach((termVal) => {
         const termObj = attrBlock.attribute.terms.find(
-          (t) => t.value === termVal
+          (t) => t.value === termVal,
         );
         const termLabel = termObj ? termObj.name || termObj.label : termVal;
 
@@ -307,7 +302,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
               isColor: isColor,
               hex: hexVal,
             },
-          ])
+          ]),
         );
       });
       return results;
@@ -349,7 +344,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     e.preventDefault();
     if (variants.length === 0)
       return toast.warn(
-        "Please generate at least one variation before saving."
+        "Please generate at least one variation before saving.",
       );
     setLoading(true);
 
@@ -384,7 +379,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
         stock: v.stock,
         sgst: v.sgst,
         cgst: v.cgst,
-        tag: v.tag, // Sending tag data to backend
+        tag: v.tag,
         attributes: v.attributes,
         isDefault: vIdx === defaultVariantIndex,
         existingImages: existingImages,
@@ -395,16 +390,16 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     try {
       if (editData && editData._id) {
         await axios.put(
-          `https://demo-backend-k0yn.onrender.com/api/products/update/${editData._id}`,
+          `http://localhost:5000/api/products/update/${editData._id}`,
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Product Updated Successfully!");
       } else {
         await axios.post(
-          "https://demo-backend-k0yn.onrender.com/api/products/create",
+          "http://localhost:5000/api/products/create",
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Product Created Successfully!");
       }
@@ -647,15 +642,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                   ))}
                 </select>
               </div>
-              <div style={s.inputGroup}>
-                <label style={s.label}>Vendor</label>
-                <input
-                  style={s.input}
-                  name="vendor"
-                  value={product.vendor}
-                  onChange={handleProductChange}
-                />
-              </div>
+
               <div style={s.inputGroup}>
                 <label style={s.label}>Status</label>
                 <select
@@ -671,11 +658,18 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             </div>
             <div style={s.inputGroup}>
               <label style={s.label}>Global Description</label>
+              {/* ✅ FIX: Swapped back to textarea with whiteSpace pre-wrap to keep paragraphs intact without buggy packages */}
               <textarea
-                style={{ ...s.input, height: "80px", resize: "none" }}
+                style={{
+                  ...s.input,
+                  height: "150px",
+                  resize: "vertical",
+                  whiteSpace: "pre-wrap",
+                }}
                 name="description"
                 value={product.description}
                 onChange={handleProductChange}
+                placeholder="Enter description here. Press Enter to start a new line."
               />
             </div>
           </div>
@@ -1272,7 +1266,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                 handleVariantChange(
                                   i,
                                   "originalPrice",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               required
@@ -1288,7 +1282,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                 handleVariantChange(
                                   i,
                                   "discountPrice",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -1363,23 +1357,6 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                               value={Number(v.sgst || 0) + Number(v.cgst || 0)}
                               readOnly
                             />
-                          </div>
-                          <div style={s.inputGroup}>
-                            <label style={s.label}>Tag</label>
-                            <select
-                              style={s.input}
-                              value={v.tag}
-                              onChange={(e) =>
-                                handleVariantChange(i, "tag", e.target.value)
-                              }
-                            >
-                              <option value="">Select Tag</option>
-                              {tagsList.map((t) => (
-                                <option key={t._id} value={t._id}>
-                                  {t.name || t.title}
-                                </option>
-                              ))}
-                            </select>
                           </div>
                         </div>
 
@@ -1532,7 +1509,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                       handleVariantImageUpload(
                                         i,
                                         sIdx,
-                                        e.target.files[0]
+                                        e.target.files[0],
                                       )
                                     }
                                   />
@@ -1553,8 +1530,8 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             {loading
               ? "Saving to Database..."
               : editData && editData._id
-              ? "Update Product"
-              : "Save Complete Product"}
+                ? "Update Product"
+                : "Save Complete Product"}
           </button>
         </form>
       </div>
