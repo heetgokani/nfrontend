@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "https://nikam-ecom-backend.onrender.com";
+const API_BASE = "http://localhost:5000";
 
 const ManageShipping = () => {
   const [shippingRules, setShippingRules] = useState([]);
@@ -109,7 +109,7 @@ const ManageShipping = () => {
         {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       toast.success(res.data.message);
       loadShippingRules();

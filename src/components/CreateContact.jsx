@@ -27,12 +27,9 @@ const CreateContact = () => {
 
   const fetchMessages = async () => {
     try {
-      const res = await axios.get(
-        "https://nikam-ecom-backend.onrender.com/api/contact/all",
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.get("http://localhost:5000/api/contact/all", {
+        withCredentials: true,
+      });
       setMessages(res.data);
     } catch (err) {
       toast.error("Failed to load inquiries");
@@ -44,12 +41,9 @@ const CreateContact = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Move this inquiry to trash?")) return;
     try {
-      await axios.delete(
-        `https://nikam-ecom-backend.onrender.com/api/contact/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await axios.delete(`http://localhost:5000/api/contact/${id}`, {
+        withCredentials: true,
+      });
       toast.success("Inquiry Deleted");
       setMessages(messages.filter((msg) => msg._id !== id));
     } catch (err) {
@@ -61,7 +55,7 @@ const CreateContact = () => {
     (msg) =>
       msg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      msg.subject.toLowerCase().includes(searchTerm.toLowerCase())
+      msg.subject.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (

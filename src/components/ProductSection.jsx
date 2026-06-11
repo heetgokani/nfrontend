@@ -119,7 +119,7 @@ const ProductSection = () => {
   const getImageUrl = (path) => {
     if (!path) return "https://via.placeholder.com/600";
     if (path.startsWith("http")) return path;
-    return `https://nikam-ecom-backend.onrender.com${path}`;
+    return `http://localhost:5000${path}`;
   };
 
   const renderStars = (rating) => {
@@ -139,7 +139,7 @@ const ProductSection = () => {
   // FETCH SHIPPING DATA
   useEffect(() => {
     axios
-      .get("https://nikam-ecom-backend.onrender.com/api/shipping/all")
+      .get("http://localhost:5000/api/shipping/all")
       .then((res) => setShippingMethods(res.data.methods || []))
       .catch((err) => console.error("Error fetching shipping methods", err));
   }, []);
@@ -152,10 +152,8 @@ const ProductSection = () => {
         window.scrollTo(0, 0);
 
         const [res, attrRes] = await Promise.all([
-          axios.get(
-            `https://nikam-ecom-backend.onrender.com/api/products/${id}`
-          ),
-          axios.get(`https://nikam-ecom-backend.onrender.com/api/attributes`),
+          axios.get(`http://localhost:5000/api/products/${id}`),
+          axios.get(`http://localhost:5000/api/attributes`),
         ]);
 
         setGlobalAttributes(attrRes.data);
@@ -173,7 +171,7 @@ const ProductSection = () => {
           setSelectedAttributes(initialAttrs);
           const variantImages = defVar.images?.filter((img) => img) || [];
           setCurrentImage(
-            variantImages.length > 0 ? variantImages[0] : prodData.thumbnail
+            variantImages.length > 0 ? variantImages[0] : prodData.thumbnail,
           );
         } else {
           setCurrentImage(prodData.thumbnail);
@@ -193,7 +191,7 @@ const ProductSection = () => {
       const fetchReviews = async () => {
         try {
           const res = await axios.get(
-            `https://nikam-ecom-backend.onrender.com/api/reviews/${selectedVariant._id}`
+            `http://localhost:5000/api/reviews/${selectedVariant._id}`,
           );
           setReviewsData(res.data);
         } catch (err) {
@@ -231,8 +229,8 @@ const ProductSection = () => {
     if (!product?.variants) return colorName;
     const variant = product.variants.find((v) =>
       v.attributes?.some(
-        (a) => a.name.toLowerCase() === "color" && a.value === colorName
-      )
+        (a) => a.name.toLowerCase() === "color" && a.value === colorName,
+      ),
     );
     if (variant?.colorHex) return variant.colorHex;
     const lower = String(colorName).toLowerCase();
@@ -247,7 +245,7 @@ const ProductSection = () => {
     setQuantity(1);
     const matchingVariant = product.variants.find((v) => {
       return Object.entries(newAttrs).every(([key, val]) =>
-        v.attributes.some((a) => a.name === key && a.value === val)
+        v.attributes.some((a) => a.name === key && a.value === val),
       );
     });
     if (matchingVariant) {
@@ -270,7 +268,7 @@ const ProductSection = () => {
             <FaTimesCircle size={18} />
             <span>Max limit reached</span>
           </>,
-          toastStyles.warning
+          toastStyles.warning,
         );
       }
     }
@@ -284,27 +282,27 @@ const ProductSection = () => {
           <FaTimesCircle size={18} />
           <span>Please login to add to cart!</span>
         </>,
-        toastStyles.error
+        toastStyles.error,
       );
       navigate("/login");
       return;
     }
     try {
       await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/cart/add",
+        "http://localhost:5000/api/cart/add",
         {
           productId: product._id,
           variantId: selectedVariant?._id || null,
           quantity: quantity,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success(
         <>
           <FaCheckCircle size={18} color="var(--green-dark)" />
           <span>Added to cart successfully!</span>
         </>,
-        toastStyles.success
+        toastStyles.success,
       );
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
@@ -313,7 +311,7 @@ const ProductSection = () => {
           <FaTimesCircle size={18} color="#8c1d1d" />
           <span>{err.response?.data?.message || "Failed to add to cart"}</span>
         </>,
-        toastStyles.error
+        toastStyles.error,
       );
     }
   };
@@ -325,20 +323,20 @@ const ProductSection = () => {
           <FaTimesCircle size={18} />
           <span>Please login to purchase items!</span>
         </>,
-        toastStyles.error
+        toastStyles.error,
       );
       navigate("/login");
       return;
     }
     try {
       await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/cart/add",
+        "http://localhost:5000/api/cart/add",
         {
           productId: product._id,
           variantId: selectedVariant?._id || null,
           quantity: quantity,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       window.dispatchEvent(new Event("cartUpdated"));
       navigate("/checkout");
@@ -350,7 +348,7 @@ const ProductSection = () => {
             {err.response?.data?.message || "Failed to process Buy Now"}
           </span>
         </>,
-        toastStyles.error
+        toastStyles.error,
       );
     }
   };
@@ -362,14 +360,14 @@ const ProductSection = () => {
           <FaTimesCircle size={18} />
           <span>Please select a city first</span>
         </>,
-        toastStyles.warning
+        toastStyles.warning,
       );
     }
     setDeliveryStatus("checking");
 
     setTimeout(() => {
       const matched = shippingMethods.find(
-        (item) => item.city === selectedCity
+        (item) => item.city === selectedCity,
       );
       if (matched && matched.isAvailable) {
         setDeliveryStatus("available");
@@ -380,12 +378,12 @@ const ProductSection = () => {
         setDeliveryMsg(
           `Delivery expected in ${
             matched.deliveryDuration || "3-5 days"
-          } (${priceText})`
+          } (${priceText})`,
         );
       } else {
         setDeliveryStatus("unavailable");
         setDeliveryMsg(
-          "Sorry, standard delivery is currently unavailable for this area."
+          "Sorry, standard delivery is currently unavailable for this area.",
         );
       }
     }, 400);
@@ -458,7 +456,9 @@ const ProductSection = () => {
 
   const originalPrice =
     Number(
-      selectedVariant?.originalPrice || selectedVariant?.price || product?.price
+      selectedVariant?.originalPrice ||
+        selectedVariant?.price ||
+        product?.price,
     ) || 0;
   const discountPrice = Number(selectedVariant?.discountPrice) || 0;
   const isSale = discountPrice > 0 && discountPrice < originalPrice;
@@ -611,7 +611,7 @@ const ProductSection = () => {
               >
                 -
                 {Math.round(
-                  ((originalPrice - discountPrice) / originalPrice) * 100
+                  ((originalPrice - discountPrice) / originalPrice) * 100,
                 )}
                 %
               </span>
@@ -779,7 +779,7 @@ const ProductSection = () => {
           {Object.keys(availableOptions).map((attrName, idx) => {
             const isColor = attrName.toLowerCase() === "color";
             const globalAttr = globalAttributes.find(
-              (a) => a.name.toLowerCase() === attrName.toLowerCase()
+              (a) => a.name.toLowerCase() === attrName.toLowerCase(),
             );
             const isDropdown = globalAttr?.displayAsDropdown || false;
 
@@ -1206,8 +1206,8 @@ const ProductSection = () => {
                     deliveryStatus === "available"
                       ? "var(--green-dark)"
                       : deliveryStatus === "unavailable"
-                      ? "#de433f"
-                      : "#666",
+                        ? "#de433f"
+                        : "#666",
                 }}
               >
                 {deliveryStatus === "checking"

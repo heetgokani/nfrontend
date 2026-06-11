@@ -23,22 +23,20 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
   const load = async () => {
     setIsLoading(true); // ✅ Start loading
     try {
-      const res = await axios.get(
-        "https://nikam-ecom-backend.onrender.com/api/products/"
-      );
+      const res = await axios.get("http://localhost:5000/api/products/");
       const baseProducts = res.data;
 
       const productsWithVariants = await Promise.all(
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `https://nikam-ecom-backend.onrender.com/api/products/${p._id}`
+              `http://localhost:5000/api/products/${p._id}`,
             );
             return { ...p, variants: detailRes.data.variants || [] };
           } catch (e) {
             return { ...p, variants: [] };
           }
-        })
+        }),
       );
       setProducts(productsWithVariants);
       setFiltered(productsWithVariants);
@@ -66,7 +64,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
             ?.toLowerCase()
             .includes(lowerQ);
           return titleMatch || brandMatch || variantMatch;
-        })
+        }),
       );
     } else {
       setFiltered(products);
@@ -77,13 +75,11 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
     if (!canDelete) return toast.error("Permission Denied");
     if (
       window.confirm(
-        "Are you sure you want to delete this product and all its variants?"
+        "Are you sure you want to delete this product and all its variants?",
       )
     ) {
       try {
-        await axios.delete(
-          `https://nikam-ecom-backend.onrender.com/api/products/delete/${id}`
-        );
+        await axios.delete(`http://localhost:5000/api/products/delete/${id}`);
         toast.success("Product deleted successfully");
         load();
       } catch (err) {
@@ -137,11 +133,11 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
     const newStatus = product.status === "Active" ? "Inactive" : "Active";
     try {
       await axios.put(
-        `https://nikam-ecom-backend.onrender.com/api/products/update/${product._id}`,
+        `http://localhost:5000/api/products/update/${product._id}`,
         {
           status: newStatus,
         },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
       toast.success(`Marked as ${newStatus}`);
       load();
@@ -153,9 +149,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
   // ✅ Helper to fix Cloudinary image loading issue
   const getImgUrl = (path) => {
     if (!path) return "https://via.placeholder.com/50";
-    return path.startsWith("http")
-      ? path
-      : `https://nikam-ecom-backend.onrender.com${path}`;
+    return path.startsWith("http") ? path : `http://localhost:5000${path}`;
   };
 
   const s = {
@@ -430,8 +424,8 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
                   const displayImg = firstVariant.images?.[0]
                     ? getImgUrl(firstVariant.images[0])
                     : p.thumbnail
-                    ? getImgUrl(p.thumbnail)
-                    : "https://via.placeholder.com/50";
+                      ? getImgUrl(p.thumbnail)
+                      : "https://via.placeholder.com/50";
 
                   const isHovered = hoveredRow === p._id;
                   const variantCount = p.variants?.length || 0;
@@ -466,7 +460,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
                             {canEdit && (
                               <span
                                 style={s.actionLink(
-                                  "var(--mern-admin-primary)"
+                                  "var(--mern-admin-primary)",
                                 )}
                                 onClick={() => handleAction(p, "edit")}
                               >
@@ -479,7 +473,7 @@ const ViewProducts = ({ onEdit, onDuplicate, onAdd }) => {
                             {canAdd && (
                               <span
                                 style={s.actionLink(
-                                  "var(--mern-admin-text-main)"
+                                  "var(--mern-admin-text-main)",
                                 )}
                                 onClick={() => handleAction(p, "clone")}
                               >

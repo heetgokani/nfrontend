@@ -25,10 +25,7 @@ const ContactSection = () => {
     setIsSubmitting(true);
     try {
       // Sending data that matches backend schema
-      await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/contact/submit",
-        formData
-      );
+      await axios.post("http://localhost:5000/api/contact/submit", formData);
       toast.success("Message sent! We'll be in touch.");
       setFormData({
         fullName: "",

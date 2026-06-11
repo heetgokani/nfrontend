@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { IoCloseOutline } from "react-icons/io5";
 
-const API_URL = "https://nikam-ecom-backend.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const CartSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
@@ -12,6 +12,7 @@ const CartSection = () => {
   const [updatingItemId, setUpdatingItemId] = useState(null);
   // SECURITY CHECK: Returns true if any item calculates to 0
   const hasZeroPriceItem = cartData.items.some((item) => {
+    if (!item || !item.product) return false;
     const p = item.product || {};
     const v = item.variant || {};
     const originalPrice = Number(v.price) || Number(p.price) || 0;
@@ -58,7 +59,7 @@ const CartSection = () => {
       await axios.put(
         `${API_URL}/api/cart/update/${itemId}`,
         { action },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       await fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
@@ -87,6 +88,9 @@ const CartSection = () => {
   // CRITICAL FIX: Calculate subtotal using the exact DISCOUNTED selling price
   const calculateSubtotal = () => {
     return cartData.items.reduce((total, item) => {
+      // Skip calculating deleted/ghost products
+      if (!item || !item.product) return total;
+
       const sellingPrice =
         item.variant?.discountPrice > 0
           ? item.variant.discountPrice
@@ -242,6 +246,8 @@ const CartSection = () => {
                         </thead>
                         <tbody>
                           {cartData.items.map((item) => {
+                            if (!item || !item._id || !item.product)
+                              return null;
                             const title = item.product?.title || "Product";
                             const variantTitle = item.variant
                               ? item.variant.title
@@ -371,7 +377,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -406,7 +412,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={
@@ -460,6 +466,7 @@ const CartSection = () => {
                     {/* --- MOBILE CARD VIEW --- */}
                     <div className="mobile-cart-view">
                       {cartData.items.map((item) => {
+                        if (!item || !item._id || !item.product) return null;
                         const title = item.product?.title || "Product";
                         const variantTitle = item.variant
                           ? item.variant.title
@@ -477,8 +484,8 @@ const CartSection = () => {
                           item.variant?.discountPrice > 0
                             ? item.variant.discountPrice
                             : item.product?.discountPrice > 0 // Added product-level discount check
-                            ? item.product.discountPrice
-                            : item.variant?.price || item.product?.price || 0;
+                              ? item.product.discountPrice
+                              : item.variant?.price || item.product?.price || 0;
                         const originalPrice =
                           item.variant?.price || item.product?.price || 0;
 
@@ -549,7 +556,7 @@ const CartSection = () => {
                                           item._id,
                                           "decrement",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={currentQty <= 1 || isUpdating}
@@ -570,7 +577,7 @@ const CartSection = () => {
                                           item._id,
                                           "increment",
                                           currentQty,
-                                          maxStock
+                                          maxStock,
                                         )
                                       }
                                       disabled={
@@ -670,7 +677,7 @@ const CartSection = () => {
                               if (hasZeroPriceItem) {
                                 e.preventDefault();
                                 alert(
-                                  "Checkout is disabled because an item in your cart has a ₹0.00 price. Please remove it to proceed."
+                                  "Checkout is disabled because an item in your cart has a ₹0.00 price. Please remove it to proceed.",
                                 );
                               }
                             }}

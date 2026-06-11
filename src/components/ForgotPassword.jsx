@@ -61,12 +61,9 @@ const ForgotPassword = () => {
     }
     setSendingOtp(true);
     try {
-      await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/user/forgot-password-otp",
-        {
-          email,
-        }
-      );
+      await axios.post("http://localhost:5000/api/user/forgot-password-otp", {
+        email,
+      });
       toast.success("Password reset OTP sent! Please check your email.");
       setOtpSent(true);
     } catch (error) {
@@ -99,8 +96,8 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/user/reset-password",
-        { email, otp: finalOtp, newPassword }
+        "http://localhost:5000/api/user/reset-password",
+        { email, otp: finalOtp, newPassword },
       );
 
       if (response.status === 200 || response.data.status === "success") {
@@ -353,8 +350,8 @@ const ForgotPassword = () => {
                           ? "SENDING OTP..."
                           : "SEND RESET OTP"
                         : loading
-                        ? "RESETTING..."
-                        : "RESET PASSWORD"}
+                          ? "RESETTING..."
+                          : "RESET PASSWORD"}
                     </span>
                     {!(loading || sendingOtp) && (
                       <span className="btn-arrow">→</span>

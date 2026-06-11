@@ -19,10 +19,10 @@ const EmailSettings = () => {
     const fetchSettings = async () => {
       try {
         const res = await axios.get(
-          "https://nikam-ecom-backend.onrender.com/api/settings/email",
+          "http://localhost:5000/api/settings/email",
           {
             withCredentials: true,
-          }
+          },
         );
         if (res.data.status === "success") {
           setFormData({
@@ -55,9 +55,9 @@ const EmailSettings = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/settings/email",
+        "http://localhost:5000/api/settings/email",
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (res.data.status === "success") {
         toast.success("SMTP Settings saved securely!");

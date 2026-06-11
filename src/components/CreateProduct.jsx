@@ -59,10 +59,10 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     const fetchData = async () => {
       try {
         const [catRes, brandRes, attrRes, gstRes] = await Promise.all([
-          axios.get("https://nikam-ecom-backend.onrender.com/api/category/all"),
-          axios.get("https://nikam-ecom-backend.onrender.com/api/brands"),
-          axios.get("https://nikam-ecom-backend.onrender.com/api/attributes"),
-          axios.get("https://nikam-ecom-backend.onrender.com/api/gst"),
+          axios.get("http://localhost:5000/api/category/all"),
+          axios.get("http://localhost:5000/api/brands"),
+          axios.get("http://localhost:5000/api/attributes"),
+          axios.get("http://localhost:5000/api/gst"),
         ]);
         setCategoriesList(catRes.data);
         setBrandsList(brandRes.data);
@@ -86,9 +86,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
           // Helper function to handle both local and Cloudinary image paths
           const getImgUrl = (path) =>
-            path.startsWith("http")
-              ? path
-              : `https://nikam-ecom-backend.onrender.com${path}`;
+            path.startsWith("http") ? path : `http://localhost:5000${path}`;
 
           // Load Global Images
           const loadedGlobalImages = [null, null, null, null, null];
@@ -167,10 +165,10 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
 
   const availableAttributes = globalAttributes.filter(
-    (attr) => !productAttributes.some((pa) => pa.attribute._id === attr._id)
+    (attr) => !productAttributes.some((pa) => pa.attribute._id === attr._id),
   );
   const filteredAttributes = availableAttributes.filter((attr) =>
-    attr.name.toLowerCase().includes(attributeSearch.toLowerCase())
+    attr.name.toLowerCase().includes(attributeSearch.toLowerCase()),
   );
 
   const handleSelectAttribute = (attrObj) => {
@@ -190,7 +188,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     const currentSelected = updated[attrIndex].selectedTerms;
     if (currentSelected.includes(termValue))
       updated[attrIndex].selectedTerms = currentSelected.filter(
-        (v) => v !== termValue
+        (v) => v !== termValue,
       );
     else updated[attrIndex].selectedTerms.push(termValue);
     setProductAttributes(updated);
@@ -199,7 +197,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
   const handleSelectAll = (attrIndex) => {
     const updated = [...productAttributes];
     updated[attrIndex].selectedTerms = updated[attrIndex].attribute.terms.map(
-      (t) => t.value
+      (t) => t.value,
     );
     setProductAttributes(updated);
   };
@@ -254,11 +252,11 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
   const generateVariations = () => {
     const activeAttrs = productAttributes.filter(
-      (pa) => pa.selectedTerms.length > 0
+      (pa) => pa.selectedTerms.length > 0,
     );
     if (activeAttrs.length === 0)
       return toast.warn(
-        "Please select at least one attribute term before generating."
+        "Please select at least one attribute term before generating.",
       );
 
     const combine = (index, currentCombo) => {
@@ -284,7 +282,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
 
       attrBlock.selectedTerms.forEach((termVal) => {
         const termObj = attrBlock.attribute.terms.find(
-          (t) => t.value === termVal
+          (t) => t.value === termVal,
         );
         const termLabel = termObj ? termObj.name || termObj.label : termVal;
 
@@ -304,7 +302,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
               isColor: isColor,
               hex: hexVal,
             },
-          ])
+          ]),
         );
       });
       return results;
@@ -346,7 +344,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     e.preventDefault();
     if (variants.length === 0)
       return toast.warn(
-        "Please generate at least one variation before saving."
+        "Please generate at least one variation before saving.",
       );
     setLoading(true);
 
@@ -392,16 +390,16 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
     try {
       if (editData && editData._id) {
         await axios.put(
-          `https://nikam-ecom-backend.onrender.com/api/products/update/${editData._id}`,
+          `http://localhost:5000/api/products/update/${editData._id}`,
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Product Updated Successfully!");
       } else {
         await axios.post(
-          "https://nikam-ecom-backend.onrender.com/api/products/create",
+          "http://localhost:5000/api/products/create",
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Product Created Successfully!");
       }
@@ -1268,7 +1266,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                 handleVariantChange(
                                   i,
                                   "originalPrice",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               required
@@ -1284,7 +1282,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                 handleVariantChange(
                                   i,
                                   "discountPrice",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -1511,7 +1509,7 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
                                       handleVariantImageUpload(
                                         i,
                                         sIdx,
-                                        e.target.files[0]
+                                        e.target.files[0],
                                       )
                                     }
                                   />
@@ -1532,8 +1530,8 @@ const CreateProduct = ({ editData, onSuccess, onCancel }) => {
             {loading
               ? "Saving to Database..."
               : editData && editData._id
-              ? "Update Product"
-              : "Save Complete Product"}
+                ? "Update Product"
+                : "Save Complete Product"}
           </button>
         </form>
       </div>

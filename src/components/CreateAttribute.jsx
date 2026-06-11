@@ -39,9 +39,7 @@ const CreateAttribute = () => {
 
   const fetchAttributes = async () => {
     try {
-      const res = await axios.get(
-        "https://nikam-ecom-backend.onrender.com/api/attributes"
-      );
+      const res = await axios.get("http://localhost:5000/api/attributes");
       setAttributes(res.data);
     } catch (err) {
       toast.error("Failed to fetch attributes");
@@ -95,12 +93,10 @@ const CreateAttribute = () => {
         value: t.value || "",
         colorCode: t.colorCode || "#000000",
         imageFile: null,
-        imagePreview: t.image
-          ? `https://nikam-ecom-backend.onrender.com${t.image}`
-          : "",
+        imagePreview: t.image ? `http://localhost:5000${t.image}` : "",
         image: t.image || "",
         label: t.label || "",
-      }))
+      })),
     );
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -139,7 +135,7 @@ const CreateAttribute = () => {
     // Append displayAsDropdown only if the type is button
     formData.append(
       "displayAsDropdown",
-      type === "button" ? displayAsDropdown : false
+      type === "button" ? displayAsDropdown : false,
     );
 
     const termsDataForBackend = validTerms.map((t) => ({
@@ -162,16 +158,16 @@ const CreateAttribute = () => {
       // ADDED: Check if editing to use PUT route, else POST
       if (editId) {
         await axios.put(
-          `https://nikam-ecom-backend.onrender.com/api/attributes/${editId}`,
+          `http://localhost:5000/api/attributes/${editId}`,
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Attribute updated successfully!");
       } else {
         await axios.post(
-          "https://nikam-ecom-backend.onrender.com/api/attributes/create",
+          "http://localhost:5000/api/attributes/create",
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         toast.success("Attribute created successfully!");
       }
@@ -210,14 +206,12 @@ const CreateAttribute = () => {
   const handleDelete = async (id) => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this attribute globally?"
+        "Are you sure you want to delete this attribute globally?",
       )
     )
       return;
     try {
-      await axios.delete(
-        `https://nikam-ecom-backend.onrender.com/api/attributes/${id}`
-      );
+      await axios.delete(`http://localhost:5000/api/attributes/${id}`);
       toast.success("Attribute deleted");
       fetchAttributes();
     } catch (err) {
@@ -678,8 +672,8 @@ const CreateAttribute = () => {
                 {loading
                   ? "Saving to Database..."
                   : editId
-                  ? "Update Complete Attribute"
-                  : "Save Complete Attribute"}
+                    ? "Update Complete Attribute"
+                    : "Save Complete Attribute"}
               </button>
 
               {/* ADDED: Cancel button only shows when editing */}
@@ -803,7 +797,7 @@ const CreateAttribute = () => {
 
                       {attr.type === "image" && t.image && (
                         <img
-                          src={`https://nikam-ecom-backend.onrender.com${t.image}`}
+                          src={`http://localhost:5000${t.image}`}
                           style={{
                             width: "20px",
                             height: "20px",

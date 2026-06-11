@@ -38,9 +38,7 @@ const AuthProvider = ({ children }) => {
     // we don't strictly require auth.token here.
     setProductsLoading(true);
     try {
-      const res = await axios.get(
-        "https://nikam-ecom-backend.onrender.com/api/products"
-      );
+      const res = await axios.get("http://localhost:5000/api/products");
       // Note: Your backend /api/products doesn't populate variants by default.
       // If you updated your backend to return variants here, this will store them perfectly.
       setProducts(res.data);
@@ -50,7 +48,6 @@ const AuthProvider = ({ children }) => {
       setProductsLoading(false);
     }
   }, []);
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
@@ -66,7 +63,14 @@ const AuthProvider = ({ children }) => {
             // Token is expired on page load, silently logout
             logout();
           } else {
-            const user = JSON.parse(userStr);
+            // Token is valid, parse user safely
+            const user = userStr !== "null" ? JSON.parse(userStr) : null;
+
+            if (!user) {
+              logout();
+              return;
+            }
+
             setAuth({
               token,
               user,
@@ -110,7 +114,7 @@ const AuthProvider = ({ children }) => {
           return new Promise(() => {});
         }
         return Promise.reject(error);
-      }
+      },
     );
     return () => axios.interceptors.response.eject(interceptor);
   }, []);

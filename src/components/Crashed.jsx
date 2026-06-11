@@ -100,7 +100,7 @@ const Crashed = () => {
   const [openProductMenu, setOpenProductMenu] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(
-    window.innerWidth > 768
+    window.innerWidth > 768,
   );
 
   const [editingProduct, setEditingProduct] = useState(null);
@@ -140,10 +140,10 @@ const Crashed = () => {
   useEffect(() => {
     if (auth?.user && canShowStockControl) {
       axios
-        .get("https://nikam-ecom-backend.onrender.com/api/stock/all")
+        .get("http://localhost:5000/api/stock/all")
         .then((res) => {
           const lowStock = res.data.filter(
-            (item) => Number(item.stock) < 3
+            (item) => Number(item.stock) < 3,
           ).length;
           setLowStockCount(lowStock);
         })
@@ -175,7 +175,7 @@ const Crashed = () => {
     if (!productId) return toast.error("Product ID missing");
     try {
       const res = await axios.get(
-        `https://nikam-ecom-backend.onrender.com/api/products/${productId}`
+        `http://localhost:5000/api/products/${productId}`,
       );
       const p = res.data.product;
 
@@ -202,7 +202,7 @@ const Crashed = () => {
     // Fetch New Orders (Assuming an endpoint that returns pending/new orders)
     if (auth?.user && canShowOrderControl) {
       axios
-        .get("https://nikam-ecom-backend.onrender.com/api/orders/new-count") // Adjust endpoint to your API
+        .get("http://localhost:5000/api/orders/new-count") // Adjust endpoint to your API
         .then((res) => setNewOrderCount(res.data.count))
         .catch((err) => console.error("Error fetching orders:", err));
     }
@@ -210,7 +210,7 @@ const Crashed = () => {
     // Fetch New Contact Messages
     if (auth?.user && canShowContactControl) {
       axios
-        .get("https://nikam-ecom-backend.onrender.com/api/contact/new-count") // Adjust endpoint to your API
+        .get("http://localhost:5000/api/contact/new-count") // Adjust endpoint to your API
         .then((res) => setNewContactCount(res.data.count))
         .catch((err) => console.error("Error fetching contacts:", err));
     }

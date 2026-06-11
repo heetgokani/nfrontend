@@ -246,14 +246,15 @@ const ProductCard = ({ product }) => {
   useEffect(() => {
     if (user && product?._id) {
       axios
-        .get("https://nikam-ecom-backend.onrender.com/api/wishlist", {
+        .get("http://localhost:5000/api/wishlist", {
           withCredentials: true,
         })
         .then((res) => {
           const items = res.data?.items || [];
           const foundItem = items.find(
             (item) =>
-              item.product?._id === product._id || item.product === product._id
+              item.product?._id === product?._id ||
+              item.product === product?._id,
           );
           if (foundItem) {
             setWishlisted(true);
@@ -276,13 +277,13 @@ const ProductCard = ({ product }) => {
     try {
       if (!wishlisted) {
         const res = await axios.post(
-          "https://nikam-ecom-backend.onrender.com/api/wishlist/add",
-          { productId: product._id, variantId: selectedVariant?._id || null },
-          { withCredentials: true }
+          "http://localhost:5000/api/wishlist/add",
+          { productId: product?._id, variantId: selectedVariant?._id || null },
+          { withCredentials: true },
         );
         setWishlisted(true);
         const newItem = res.data.wishlist?.items?.find(
-          (i) => i.product === product._id
+          (i) => i.product === product?._id,
         );
         if (newItem) setWishlistItemId(newItem._id);
 
@@ -291,14 +292,14 @@ const ProductCard = ({ product }) => {
             <IoCheckmarkCircle size={18} color="#3c7d24" />
             <span>Added to Wishlist!</span>
           </div>,
-          { ...baseToastOptions, ...toastStyles.success }
+          { ...baseToastOptions, ...toastStyles.success },
         );
         window.dispatchEvent(new Event("wishlistUpdated"));
       } else {
         if (wishlistItemId) {
           await axios.delete(
-            `https://nikam-ecom-backend.onrender.com/api/wishlist/remove/${wishlistItemId}`,
-            { withCredentials: true }
+            `http://localhost:5000/api/wishlist/remove/${wishlistItemId}`,
+            { withCredentials: true },
           );
           setWishlisted(false);
           setWishlistItemId(null);
@@ -308,7 +309,7 @@ const ProductCard = ({ product }) => {
               <IoInformationCircle size={18} color="#18181b" />
               <span>Removed from Wishlist</span>
             </div>,
-            { ...baseToastOptions, ...toastStyles.info }
+            { ...baseToastOptions, ...toastStyles.info },
           );
           window.dispatchEvent(new Event("wishlistUpdated"));
         }
@@ -319,7 +320,7 @@ const ProductCard = ({ product }) => {
           <IoCloseCircle size={18} color="#de433f" />
           <span>Error updating wishlist</span>
         </div>,
-        { ...baseToastOptions, ...toastStyles.error }
+        { ...baseToastOptions, ...toastStyles.error },
       );
     }
   };
@@ -332,13 +333,13 @@ const ProductCard = ({ product }) => {
     }
     try {
       await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/cart/add",
+        "http://localhost:5000/api/cart/add",
         {
-          productId: product._id,
+          productId: product?._id,
           variantId: selectedVariant?._id || null,
           quantity: 1,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       toast.success(
@@ -346,7 +347,7 @@ const ProductCard = ({ product }) => {
           <IoCheckmarkCircle size={18} color="#3c7d24" />
           <span>Added to Cart!</span>
         </div>,
-        { ...baseToastOptions, ...toastStyles.success }
+        { ...baseToastOptions, ...toastStyles.success },
       );
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
@@ -355,7 +356,7 @@ const ProductCard = ({ product }) => {
           <IoCloseCircle size={18} color="#de433f" />
           <span>Error adding to cart</span>
         </div>,
-        { ...baseToastOptions, ...toastStyles.error }
+        { ...baseToastOptions, ...toastStyles.error },
       );
     }
   };
@@ -364,8 +365,8 @@ const ProductCard = ({ product }) => {
     !path
       ? "https://via.placeholder.com/400"
       : path.startsWith("http")
-      ? path
-      : `https://nikam-ecom-backend.onrender.com${path}`;
+        ? path
+        : `http://localhost:5000${path}`;
 
   return (
     <div className="nikam-pc-wrapper">
@@ -377,7 +378,7 @@ const ProductCard = ({ product }) => {
         >
           <img
             src={getImageUrl(
-              selectedVariant?.images?.[0] || product?.thumbnail
+              selectedVariant?.images?.[0] || product?.thumbnail,
             )}
             alt={product?.title}
             className="nikam-pc-img"

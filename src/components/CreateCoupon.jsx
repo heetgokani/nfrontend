@@ -43,9 +43,9 @@ const CreateCoupon = () => {
   const fetchInitialData = async () => {
     try {
       const [couponRes, catRes, prodRes] = await Promise.all([
-        axios.get("https://nikam-ecom-backend.onrender.com/api/coupons/all"),
-        axios.get("https://nikam-ecom-backend.onrender.com/api/category/all"),
-        axios.get("https://nikam-ecom-backend.onrender.com/api/products"),
+        axios.get("http://localhost:5000/api/coupons/all"),
+        axios.get("http://localhost:5000/api/category/all"),
+        axios.get("http://localhost:5000/api/products"),
       ]);
       setCoupons(couponRes.data);
       setCategories(catRes.data);
@@ -77,15 +77,12 @@ const CreateCoupon = () => {
     try {
       if (editId) {
         await axios.put(
-          `https://nikam-ecom-backend.onrender.com/api/coupons/update/${editId}`,
-          formData
+          `http://localhost:5000/api/coupons/update/${editId}`,
+          formData,
         );
         toast.success("Coupon Updated");
       } else {
-        await axios.post(
-          "https://nikam-ecom-backend.onrender.com/api/coupons/create",
-          formData
-        );
+        await axios.post("http://localhost:5000/api/coupons/create", formData);
         toast.success("Coupon Created");
       }
       resetForm();
@@ -128,9 +125,7 @@ const CreateCoupon = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this coupon?")) return;
     try {
-      await axios.delete(
-        `https://nikam-ecom-backend.onrender.com/api/coupons/delete/${id}`
-      );
+      await axios.delete(`http://localhost:5000/api/coupons/delete/${id}`);
       toast.success("Deleted");
       fetchInitialData();
     } catch (err) {

@@ -17,10 +17,10 @@ const PaymentSettings = () => {
     const fetchSettings = async () => {
       try {
         const res = await axios.get(
-          "https://nikam-ecom-backend.onrender.com/api/settings/payment",
+          "http://localhost:5000/api/settings/payment",
           {
             withCredentials: true,
-          }
+          },
         );
         if (res.data.status === "success") {
           setFormData({
@@ -51,9 +51,9 @@ const PaymentSettings = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        "https://nikam-ecom-backend.onrender.com/api/settings/payment",
+        "http://localhost:5000/api/settings/payment",
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (res.data.status === "success") {
         toast.success("Razorpay Settings saved securely!");

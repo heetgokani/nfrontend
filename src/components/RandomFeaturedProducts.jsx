@@ -11,13 +11,11 @@ const RandomFeaturedProducts = () => {
   useEffect(() => {
     const fetchRandomProducts = async () => {
       try {
-        const response = await axios.get(
-          "https://nikam-ecom-backend.onrender.com/api/products/"
-        );
+        const response = await axios.get("http://localhost:5000/api/products/");
 
         // 1. Filter out inactive products
         const activeProducts = response.data.filter(
-          (p) => p.status !== "Inactive"
+          (p) => p.status !== "Inactive",
         );
 
         // 2. Shuffle the array randomly
