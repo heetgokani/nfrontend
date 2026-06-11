@@ -4,7 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://nbackend-31lg.onrender.com";
 
 const PaymentSection = () => {
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ const PaymentSection = () => {
         payload,
         {
           withCredentials: true,
-        },
+        }
       );
 
       if (!initResponse.data.success)
@@ -131,7 +131,7 @@ const PaymentSection = () => {
               verifyPayload,
               {
                 withCredentials: true,
-              },
+              }
             );
 
             if (finalRes.data.success) {
@@ -147,7 +147,7 @@ const PaymentSection = () => {
             }
           } catch (err) {
             toast.error(
-              err.response?.data?.message || "Payment verification failed.",
+              err.response?.data?.message || "Payment verification failed."
             );
           }
         },
@@ -171,7 +171,7 @@ const PaymentSection = () => {
       paymentObject.open();
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Failed to initialize payment.",
+        error.response?.data?.message || "Failed to initialize payment."
       );
       setProcessing(false);
     }

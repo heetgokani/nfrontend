@@ -6,9 +6,9 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { PageHeader } from "./Crashed";
 
 // NOTE: If you are running this live on your VPS, you need to change
-// 'http://localhost:5000' to 'https://www.avsarcards.com' so it doesn't fail.
-const API_URL_ROLES = "http://localhost:5000/api/role";
-const API_URL_USER = "http://localhost:5000/api/user";
+// 'https://nbackend-31lg.onrender.com' to 'https://www.avsarcards.com' so it doesn't fail.
+const API_URL_ROLES = "https://nbackend-31lg.onrender.com/api/role";
+const API_URL_USER = "https://nbackend-31lg.onrender.com/api/user";
 
 const CreateUser = () => {
   const [roles, setRoles] = useState([]);

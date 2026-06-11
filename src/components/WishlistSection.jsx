@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { NavLink } from "react-router-dom";
 import ProductCard from "../components/ProductCard"; // Adjust path as needed
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://nbackend-31lg.onrender.com";
 
 const WishlistSection = () => {
   const [wishlistItems, setWishlistItems] = useState([]);

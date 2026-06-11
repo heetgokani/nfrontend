@@ -155,7 +155,7 @@ const CreateGst = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  const API_URL = "http://localhost:5000/api/gst";
+  const API_URL = "https://nbackend-31lg.onrender.com/api/gst";
 
   const initialState = {
     taxType: "SGST",
@@ -186,10 +186,10 @@ const CreateGst = () => {
       await axios.post(
         `${API_URL}/universal`,
         { value: val },
-        { withCredentials: true },
+        { withCredentials: true }
       );
       toast.success(
-        `System set to: ${val === "Inclusive" ? "Include GST" : "Exclude GST"}`,
+        `System set to: ${val === "Inclusive" ? "Include GST" : "Exclude GST"}`
       );
     } catch (err) {
       toast.error("Failed to update global setting");

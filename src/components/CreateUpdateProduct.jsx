@@ -32,27 +32,29 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/products");
+      const res = await axios.get(
+        "https://nbackend-31lg.onrender.com/api/products"
+      );
       const baseProducts = res.data;
 
       const productsWithVariants = await Promise.all(
         baseProducts.map(async (p) => {
           try {
             const detailRes = await axios.get(
-              `http://localhost:5000/api/products/${p._id}`,
+              `https://nbackend-31lg.onrender.com/api/products/${p._id}`
             );
             return { product: p, variants: detailRes.data.variants || [] };
           } catch (e) {
             return { product: p, variants: [] };
           }
-        }),
+        })
       );
 
       const allVariants = productsWithVariants.flatMap((item) =>
         item.variants.map((v) => ({
           ...v,
           productId: item.product,
-        })),
+        }))
       );
 
       setParentProducts(baseProducts);
@@ -72,7 +74,7 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
     ...new Set(
       parentProducts
         .map((p) => p?.brand?.name || p?.brand?.title)
-        .filter(Boolean),
+        .filter(Boolean)
     ),
   ];
   const uniqueCategories = [
@@ -81,7 +83,7 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
 
   const filteredData = productData.filter((item) => {
     const parentProd = parentProducts.find(
-      (p) => p._id === (item.productId?._id || item.productId),
+      (p) => p._id === (item.productId?._id || item.productId)
     );
     const brandName = parentProd?.brand?.name || parentProd?.brand?.title || "";
     const catName = parentProd?.category?.title || "";
@@ -108,7 +110,7 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
 
     const data = filteredData.map((v) => {
       const parentProd = parentProducts.find(
-        (p) => p._id === (v.productId?._id || v.productId),
+        (p) => p._id === (v.productId?._id || v.productId)
       );
 
       return {
@@ -141,8 +143,8 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
     setUploading(true);
     try {
       await axios.post(
-        "http://localhost:5000/api/products/import-excel",
-        formData,
+        "https://nbackend-31lg.onrender.com/api/products/import-excel",
+        formData
       );
       toast.success("Bulk Update Successful!");
       fetchProducts();
@@ -485,15 +487,15 @@ const CreateUpdateProduct = ({ onEditProduct }) => {
               <tbody>
                 {filteredData.map((v) => {
                   const parent = parentProducts.find(
-                    (p) => p._id === (v.productId?._id || v.productId),
+                    (p) => p._id === (v.productId?._id || v.productId)
                   );
                   const brandName =
                     parent?.brand?.name || parent?.brand?.title || "N/A";
                   const imgUrl = v.images?.[0]
-                    ? `http://localhost:5000${v.images[0]}`
+                    ? `https://nbackend-31lg.onrender.com${v.images[0]}`
                     : parent?.thumbnail
-                      ? `http://localhost:5000${parent.thumbnail}`
-                      : null;
+                    ? `https://nbackend-31lg.onrender.com${parent.thumbnail}`
+                    : null;
 
                   return (
                     <tr key={v._id} style={s.tr}>

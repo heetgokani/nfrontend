@@ -14,7 +14,7 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://nbackend-31lg.onrender.com";
 
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -99,7 +99,7 @@ const Header = () => {
         const filtered = res.data.filter(
           (p) =>
             p.title?.toLowerCase().includes(localSearchQuery.toLowerCase()) &&
-            p.status !== "Inactive",
+            p.status !== "Inactive"
         );
         setPreviewResults(filtered.slice(0, 5));
       } catch (err) {
@@ -132,7 +132,7 @@ const Header = () => {
             </strong>
           ) : (
             part
-          ),
+          )
         )}
       </span>
     );
@@ -645,7 +645,7 @@ const Header = () => {
                     {link}
                   </NavLink>
                 </li>
-              ),
+              )
             )}
           </ul>
         </div>

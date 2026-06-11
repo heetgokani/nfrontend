@@ -17,13 +17,13 @@ const ShippingSection = () => {
 
       // Fetch the delivery duration and MATCH BY CITY instead of PIN Code
       axios
-        .get("http://localhost:5000/api/shipping/all")
+        .get("https://nbackend-31lg.onrender.com/api/shipping/all")
         .then((res) => {
           const methods = res.data.methods || [];
           const matchedRule = methods.find(
             (r) =>
               r.city?.toLowerCase().trim() ===
-              parsedShipping.city?.toLowerCase().trim(),
+              parsedShipping.city?.toLowerCase().trim()
           );
           if (matchedRule && matchedRule.deliveryDuration) {
             setDeliveryDuration(matchedRule.deliveryDuration);

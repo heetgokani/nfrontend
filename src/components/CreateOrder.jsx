@@ -13,7 +13,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://nbackend-31lg.onrender.com";
 
 const CreateOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -53,7 +53,7 @@ const CreateOrder = () => {
             ?.toLowerCase()
             .includes(lowerQ);
           return orderIdMatch || nameMatch || emailMatch;
-        }),
+        })
       );
     } else {
       setFiltered(orders);
@@ -68,7 +68,7 @@ const CreateOrder = () => {
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       toast.success(`Order marked as ${newStatus}`);
       loadOrders();

@@ -22,7 +22,9 @@ const CreateBrand = () => {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/brands");
+      const res = await axios.get(
+        "https://nbackend-31lg.onrender.com/api/brands"
+      );
       setBrands(res.data);
     } catch (err) {
       toast.error("Failed to fetch brands");
@@ -40,11 +42,17 @@ const CreateBrand = () => {
     setLoading(true);
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/brands/${editId}`, { name });
+        await axios.put(
+          `https://nbackend-31lg.onrender.com/api/brands/${editId}`,
+          { name }
+        );
         toast.success("Brand updated!");
         setEditId(null);
       } else {
-        await axios.post("http://localhost:5000/api/brands/create", { name });
+        await axios.post(
+          "https://nbackend-31lg.onrender.com/api/brands/create",
+          { name }
+        );
         toast.success("Brand created!");
       }
       setName("");
@@ -65,7 +73,7 @@ const CreateBrand = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this brand?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/brands/${id}`);
+      await axios.delete(`https://nbackend-31lg.onrender.com/api/brands/${id}`);
       toast.success("Brand deleted successfully!");
       if (editId === id) {
         setEditId(null);
@@ -78,7 +86,7 @@ const CreateBrand = () => {
   };
 
   const filteredBrands = brands.filter((b) =>
-    (b.name || b.title || "").toLowerCase().includes(searchTerm.toLowerCase()),
+    (b.name || b.title || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const s = {
@@ -264,8 +272,8 @@ const CreateBrand = () => {
               {loading
                 ? "Saving to Database..."
                 : editId
-                  ? "Update Brand"
-                  : "Save Brand"}
+                ? "Update Brand"
+                : "Save Brand"}
             </button>
             {editId && (
               <button

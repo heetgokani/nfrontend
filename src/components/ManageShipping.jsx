@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://nbackend-31lg.onrender.com";
 
 const ManageShipping = () => {
   const [shippingRules, setShippingRules] = useState([]);
@@ -109,7 +109,7 @@ const ManageShipping = () => {
         {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        },
+        }
       );
       toast.success(res.data.message);
       loadShippingRules();

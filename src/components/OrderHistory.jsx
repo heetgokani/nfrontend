@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext"; // Added for auth check
 // ADDED FiDownload TO THIS IMPORT
 import { FiStar, FiX, FiCheckCircle, FiDownload } from "react-icons/fi";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://nbackend-31lg.onrender.com";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -69,7 +69,7 @@ const OrderHistory = () => {
         {
           withCredentials: true,
           responseType: "blob", // Important for binary PDF data
-        },
+        }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -111,7 +111,7 @@ const OrderHistory = () => {
           rating: reviewData.rating,
           comment: reviewData.comment,
         },
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       if (response.data.success) {
@@ -450,7 +450,7 @@ const OrderHistory = () => {
                             className="badge rounded-pill px-3 py-2 text-white"
                             style={{
                               backgroundColor: getStatusColor(
-                                order.orderStatus,
+                                order.orderStatus
                               ),
                               fontSize: "12px",
                               fontWeight: "500",
@@ -478,7 +478,7 @@ const OrderHistory = () => {
                               onClick={() =>
                                 handleDownloadInvoice(
                                   order._id,
-                                  order.orderNumber,
+                                  order.orderNumber
                                 )
                               }
                               disabled={downloadingId === order._id}

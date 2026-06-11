@@ -18,9 +18,9 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/user/google-login",
+        "https://nbackend-31lg.onrender.com/api/user/google-login",
         { googleToken: credentialResponse.credential },
-        { withCredentials: true },
+        { withCredentials: true }
       );
 
       if (response.status === 200) {

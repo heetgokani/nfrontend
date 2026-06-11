@@ -18,10 +18,10 @@ const CreateInvoice = () => {
   const loadOrders = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/orders/admin/all",
+        "https://nbackend-31lg.onrender.com/api/orders/admin/all",
         {
           withCredentials: true,
-        },
+        }
       );
       setOrders(res.data.orders || []);
       setFiltered(res.data.orders || []);
@@ -81,11 +81,11 @@ const CreateInvoice = () => {
       setDownloadingId(orderId);
 
       const response = await axios.get(
-        `http://localhost:5000/api/orders/${orderId}/invoice`,
+        `https://nbackend-31lg.onrender.com/api/orders/${orderId}/invoice`,
         {
           withCredentials: true,
           responseType: "blob", // Important for receiving binary PDF data
-        },
+        }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
