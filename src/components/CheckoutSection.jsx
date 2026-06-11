@@ -8,6 +8,7 @@ const API_URL = "https://nbackend-31lg.onrender.com";
 const CheckoutSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
+
   const hasZeroPriceItem = cartData.items.some((item) => {
     const p = item.product || {};
     const v = item.variant || {};
@@ -21,6 +22,7 @@ const CheckoutSection = () => {
 
     return sellingPrice <= 0;
   });
+
   // --- NEW SHIPPING API STATES ---
   const [allShippingRules, setAllShippingRules] = useState([]);
   const [shippingPrice, setShippingPrice] = useState(0);
@@ -56,11 +58,18 @@ const CheckoutSection = () => {
     discountAmount: 0,
   });
 
+  // 🛡️ HELPER: Grab token explicitly for iOS bypass
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     // 1. Fetch Cart Data
     const fetchCart = async () => {
       try {
         const { data } = await axios.get(`${API_URL}/api/cart`, {
+          headers: getAuthHeader(), // 🛡️ Explicit Token Injection
           withCredentials: true,
         });
         setCartData(data || { items: [] });
@@ -144,7 +153,6 @@ const CheckoutSection = () => {
   };
 
   // --- CRITICAL FIX: MATH & GST CALCULATIONS BASE ON SELLING PRICE ---
-  // Inside calculateTotals in CheckoutSection.jsx
   const calculateTotals = () => {
     let baseSubtotal = 0;
     let baseSGST = 0;
@@ -181,6 +189,7 @@ const CheckoutSection = () => {
   // FIX: Do not add finalSGST and finalCGST to the total.
   // The price already includes GST (Universal Pricing).
   const total = Math.max(0, baseSubtotal - discountAmount) + shipping;
+
   // --- COUPON LOGIC ---
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -204,11 +213,18 @@ const CheckoutSection = () => {
         };
       });
 
-      const response = await axios.post(`${API_URL}/api/coupons/validate`, {
-        code: promoCode,
-        cartItems: formattedCartItems,
-        subtotal: baseSubtotal,
-      });
+      const response = await axios.post(
+        `${API_URL}/api/coupons/validate`,
+        {
+          code: promoCode,
+          cartItems: formattedCartItems,
+          subtotal: baseSubtotal,
+        },
+        {
+          headers: getAuthHeader(), // 🛡️ Explicit Token Injection for Coupons
+          withCredentials: true,
+        }
+      );
 
       if (response.data.success) {
         setAppliedCoupon({
@@ -1318,9 +1334,8 @@ const CheckoutSection = () => {
                           padding: "14px",
                           borderRadius: "6px",
                           border: "1px solid #ddd",
-                          color: "#333",
                           fontWeight: "bold",
-                          backgroundColor: "#407e18", // No !important needed now
+                          backgroundColor: "#407e18",
                           color: "#fff",
                         }}
                       >
