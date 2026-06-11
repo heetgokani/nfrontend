@@ -34,15 +34,11 @@ const AuthProvider = ({ children }) => {
   };
 
   const fetchProducts = useCallback(async () => {
-    // If you want this to run even for guests (like an eCommerce site usually does),
-    // we don't strictly require auth.token here.
     setProductsLoading(true);
     try {
       const res = await axios.get(
         "https://nbackend-31lg.onrender.com/api/products"
       );
-      // Note: Your backend /api/products doesn't populate variants by default.
-      // If you updated your backend to return variants here, this will store them perfectly.
       setProducts(res.data);
     } catch (error) {
       console.error("Failed to fetch products:", error);
@@ -50,6 +46,8 @@ const AuthProvider = ({ children }) => {
       setProductsLoading(false);
     }
   }, []);
+
+  // Validate session on app initialization
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
@@ -62,10 +60,8 @@ const AuthProvider = ({ children }) => {
           const currentTime = Date.now() / 1000;
 
           if (payload.exp && payload.exp < currentTime) {
-            // Token is expired on page load, silently logout
             logout();
           } else {
-            // Token is valid, parse user safely
             const user = userStr !== "null" ? JSON.parse(userStr) : null;
 
             if (!user) {
@@ -88,7 +84,7 @@ const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Fetch products on mount regardless of auth so shop works for guests
+  // Fetch product listings on assembly mounting
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
@@ -104,21 +100,35 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem("token", token);
   };
 
+  // 🛡️ GLOBAL REQUEST AND RESPONSE INTERCEPTORS ENGINE
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
+    // Request Interceptor: Automatically bundles token headers to keep iOS authenticated
+    const requestInterceptor = axios.interceptors.request.use((config) => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        config.headers.Authorization = `Bearer ${storedToken}`;
+      }
+      return config;
+    });
+
+    // Response Interceptor: Catches session expiry triggers securely
+    const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
         if (error.response && [401, 403].includes(error.response.status)) {
           logout();
-          // 🛡️ THE SILENT FIX:
-          // Returning an empty promise freezes the error here.
-          // It stops your UI components from crashing or showing toasts while the page redirects.
+          // Returning an unfulfilled promise payload safely prevents application core layouts from crashing
           return new Promise(() => {});
         }
         return Promise.reject(error);
       }
     );
-    return () => axios.interceptors.response.eject(interceptor);
+
+    // Unmount cleanup logic to avoid interceptor layering leaks
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   return (
