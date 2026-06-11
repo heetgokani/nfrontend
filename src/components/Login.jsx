@@ -12,8 +12,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const clientId =
-    "708584918735-au5e08dq21hsnp61b5r0euo72dk8v6a6.apps.googleusercontent.com";
-
+    "213220421864-hpm7q03avelqecjcnvpu79falqh7u9dv.apps.googleusercontent.com";
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
     try {
