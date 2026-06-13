@@ -23,14 +23,27 @@ const PaymentSection = () => {
     if (savedShipping) setShippingAddress(savedShipping);
     if (savedBilling) setBillingAddress(savedBilling);
 
+    // CRITICAL iOS FIX: Add timestamp to bypass Safari's aggressive caching
+    // and explicitly pass token in case the global interceptor fails on mobile mount
     const fetchCart = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/api/cart`, {
-          withCredentials: true,
-        });
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get(
+          `${API_URL}/api/cart?timestamp=${new Date().getTime()}`,
+          {
+            withCredentials: true,
+            headers: {
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+              Pragma: "no-cache",
+              Expires: "0",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
         setCartData(data);
       } catch (error) {
-        toast.error("Failed to load cart items.");
+        console.error("Cart fetch error:", error);
+        toast.error("Failed to load cart items. Please refresh.");
       }
     };
     fetchCart();
@@ -49,7 +62,7 @@ const PaymentSection = () => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    if (!cartData || cartData.items.length === 0) {
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
       return toast.error("Your cart is empty.");
     }
     if (!shippingAddress || !billingAddress) {
@@ -65,8 +78,7 @@ const PaymentSection = () => {
         return toast.error("Razorpay SDK failed to load. Are you online?");
       }
 
-      // CRITICAL FIX: Ensure the payload maps the correct selling price
-      // In PaymentSection.jsx, inside handlePayment
+      // Format order items with exact selling prices
       const orderItems = cartData.items.map((item) => {
         const sellingPrice =
           item.variant?.discountPrice > 0
@@ -78,21 +90,18 @@ const PaymentSection = () => {
           variant: item.variant?._id || null,
           title: item.product.title,
           quantity: item.quantity,
-          price: sellingPrice, // EXPLICITLY PASS THE PRICE HERE
+          price: sellingPrice,
           image: item.variant?.images?.[0] || item.product?.thumbnail || "",
         };
       });
 
-      // ... existing code ...
       const payload = {
         orderItems,
         shippingAddress,
         billingAddress,
         ...totals,
-        // ADD THIS LINE to send the exact total explicitly:
         totalAmount: totals.totalPrice,
       };
-      // ... existing code ...
 
       // 1. Initialize Order in Backend (Validates stock & creates Razorpay Order)
       const initResponse = await axios.post(
@@ -179,7 +188,7 @@ const PaymentSection = () => {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer position="top-center" style={{ marginTop: "60px" }} />
       <div
         className="breadcrumb"
         style={{ padding: "15px 0", background: "#f9f9f9" }}
@@ -199,6 +208,7 @@ const PaymentSection = () => {
                 width="10"
                 height="10"
                 viewBox="0 0 64 64"
+                fill="none"
                 style={{ margin: "0 10px", opacity: 0.5 }}
               >
                 <path
@@ -217,6 +227,7 @@ const PaymentSection = () => {
                 width="10"
                 height="10"
                 viewBox="0 0 64 64"
+                fill="none"
                 style={{ margin: "0 10px", opacity: 0.5 }}
               >
                 <path
@@ -238,6 +249,7 @@ const PaymentSection = () => {
                 width="10"
                 height="10"
                 viewBox="0 0 64 64"
+                fill="none"
                 style={{ margin: "0 10px", opacity: 0.5 }}
               >
                 <path
@@ -259,6 +271,7 @@ const PaymentSection = () => {
                 width="10"
                 height="10"
                 viewBox="0 0 64 64"
+                fill="none"
                 style={{ margin: "0 10px", opacity: 0.5 }}
               >
                 <path
@@ -304,29 +317,36 @@ const PaymentSection = () => {
                     </h2>
 
                     <div className="payment-form common-form mt-4 p-4 border rounded bg-white">
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
+                      {/* CRITICAL iOS UI FIX: Added flex-wrap and gap-3 so text doesn't overlap price on mobile */}
+                      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+                        <div
+                          className="d-flex align-items-center flex-grow-1"
+                          style={{ minWidth: "220px" }}
+                        >
                           <input
                             type="radio"
                             name="payment"
                             id="razorpay"
                             checked
                             readOnly
-                            style={{ accentColor: "#407e18" }}
+                            style={{ accentColor: "#407e18", flexShrink: 0 }}
                           />
                           <label
                             htmlFor="razorpay"
-                            className="ms-3 mb-0 fw-bold"
-                            style={{ fontSize: "16px" }}
+                            className="ms-3 mb-0 fw-bold text-wrap"
+                            style={{ fontSize: "15px", lineHeight: "1.4" }}
                           >
                             Razorpay (UPI, Cards, NetBanking)
                           </label>
                         </div>
                         <span
-                          className="fw-bold"
+                          className="fw-bold text-nowrap"
                           style={{ fontSize: "18px", color: "#407e18" }}
                         >
-                          ₹{totals.totalPrice.toFixed(2)}
+                          ₹
+                          {totals?.totalPrice
+                            ? totals.totalPrice.toFixed(2)
+                            : "0.00"}
                         </span>
                       </div>
                       <p
@@ -339,16 +359,16 @@ const PaymentSection = () => {
                   </div>
 
                   <div className="shipping-address-area billing-area mt-5">
-                    <div className="minicart-btn-area d-flex align-items-center justify-content-between flex-wrap">
+                    <div className="minicart-btn-area d-flex align-items-center justify-content-between flex-wrap gap-2">
                       <a
                         href="/shipping"
-                        className="checkout-page-btn minicart-btn btn-secondary"
+                        className="checkout-page-btn minicart-btn btn-secondary text-center w-sm-auto w-100"
                       >
                         BACK TO SHIPPING
                       </a>
                       <button
                         onClick={handlePayment}
-                        className="checkout-page-btn minicart-btn btn-primary border-0"
+                        className="checkout-page-btn minicart-btn btn-primary border-0 text-center w-sm-auto w-100"
                         disabled={processing}
                         style={{
                           backgroundColor: "#407e18",

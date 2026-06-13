@@ -10,7 +10,6 @@ const CartSection = () => {
 
   // State to prevent rapid double-clicking race conditions
   const [updatingItemId, setUpdatingItemId] = useState(null);
-
   // SECURITY CHECK: Returns true if any item calculates to 0
   const hasZeroPriceItem = cartData.items.some((item) => {
     if (!item || !item.product) return false;
@@ -27,17 +26,9 @@ const CartSection = () => {
 
     return sellingPrice <= 0;
   });
-
-  // 🛡️ HELPER: Grab token explicitly for iOS bypass
-  const getAuthHeader = () => {
-    const token = localStorage.getItem("token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
   const fetchCart = async () => {
     try {
       const { data } = await axios.get(`${API_URL}/api/cart`, {
-        headers: getAuthHeader(), // 🛡️ Explicit Token Injection
         withCredentials: true,
       });
       setCartData(data || { items: [] });
@@ -68,10 +59,7 @@ const CartSection = () => {
       await axios.put(
         `${API_URL}/api/cart/update/${itemId}`,
         { action },
-        {
-          headers: getAuthHeader(), // 🛡️ Explicit Token Injection
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       await fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
@@ -86,7 +74,6 @@ const CartSection = () => {
     try {
       setUpdatingItemId(itemId);
       await axios.delete(`${API_URL}/api/cart/remove/${itemId}`, {
-        headers: getAuthHeader(), // 🛡️ Explicit Token Injection
         withCredentials: true,
       });
       await fetchCart();
