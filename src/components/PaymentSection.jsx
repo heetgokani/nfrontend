@@ -317,44 +317,52 @@ const PaymentSection = () => {
                     </h2>
 
                     <div className="payment-form common-form mt-4 p-4 border rounded bg-white">
-                      {/* CRITICAL iOS UI FIX: Added flex-wrap and gap-3 so text doesn't overlap price on mobile */}
-                      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
-                        <div
-                          className="d-flex align-items-center flex-grow-1"
-                          style={{ minWidth: "220px" }}
-                        >
+                      {/* CRITICAL UI FIX: Exact requested column structure */}
+                      <div className="d-flex align-items-start">
+                        {/* Left Column: Radio Button & Price */}
+                        <div className="d-flex flex-column align-items-center me-3 flex-shrink-0">
                           <input
                             type="radio"
                             name="payment"
                             id="razorpay"
                             checked
                             readOnly
-                            style={{ accentColor: "#407e18", flexShrink: 0 }}
+                            style={{
+                              accentColor: "#407e18",
+                              width: "20px",
+                              height: "20px",
+                              marginBottom: "8px",
+                            }}
                           />
+                          <span
+                            className="fw-bold"
+                            style={{ fontSize: "16px", color: "#407e18" }}
+                          >
+                            ₹
+                            {totals?.totalPrice
+                              ? totals.totalPrice.toFixed(2)
+                              : "0.00"}
+                          </span>
+                        </div>
+
+                        {/* Right Column: Title & Description */}
+                        <div className="d-flex flex-column justify-content-start">
                           <label
                             htmlFor="razorpay"
-                            className="ms-3 mb-0 fw-bold text-wrap"
-                            style={{ fontSize: "15px", lineHeight: "1.4" }}
+                            className="mb-1 fw-bold"
+                            style={{ fontSize: "16px", lineHeight: "1.4" }}
                           >
                             Razorpay (UPI, Cards, NetBanking)
                           </label>
+                          <p
+                            className="text-muted mb-0 mt-1"
+                            style={{ fontSize: "13px", lineHeight: "1.5" }}
+                          >
+                            Pay securely using Razorpay's encrypted payment
+                            gateway.
+                          </p>
                         </div>
-                        <span
-                          className="fw-bold text-nowrap"
-                          style={{ fontSize: "18px", color: "#407e18" }}
-                        >
-                          ₹
-                          {totals?.totalPrice
-                            ? totals.totalPrice.toFixed(2)
-                            : "0.00"}
-                        </span>
                       </div>
-                      <p
-                        className="text-muted ms-4 mb-0"
-                        style={{ fontSize: "14px" }}
-                      >
-                        Pay securely using Razorpay's encrypted payment gateway.
-                      </p>
                     </div>
                   </div>
 

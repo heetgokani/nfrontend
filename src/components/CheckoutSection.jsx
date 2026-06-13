@@ -8,7 +8,9 @@ const API_URL = "https://nbackend-31lg.onrender.com";
 const CheckoutSection = () => {
   const [cartData, setCartData] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
-  const hasZeroPriceItem = cartData.items.some((item) => {
+
+  // FIX: Added safe fallback (cartData?.items || []) to prevent silent iOS crashes
+  const hasZeroPriceItem = (cartData?.items || []).some((item) => {
     const p = item.product || {};
     const v = item.variant || {};
     const originalPrice = Number(v.price) || Number(p.price) || 0;
@@ -21,6 +23,7 @@ const CheckoutSection = () => {
 
     return sellingPrice <= 0;
   });
+
   // --- NEW SHIPPING API STATES ---
   const [allShippingRules, setAllShippingRules] = useState([]);
   const [shippingPrice, setShippingPrice] = useState(0);
@@ -57,12 +60,22 @@ const CheckoutSection = () => {
   });
 
   useEffect(() => {
-    // 1. Fetch Cart Data
+    // 1. Fetch Cart Data (CRITICAL iOS FIX: Cache-busting added here)
     const fetchCart = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/api/cart`, {
-          withCredentials: true,
-        });
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get(
+          `${API_URL}/api/cart?timestamp=${new Date().getTime()}`,
+          {
+            withCredentials: true,
+            headers: {
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+              Pragma: "no-cache",
+              Expires: "0",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
         setCartData(data || { items: [] });
       } catch (error) {
         toast.error("Failed to load cart items.");
@@ -72,10 +85,15 @@ const CheckoutSection = () => {
     };
     fetchCart();
 
-    // 2. Fetch Shipping Rules from DB
+    // 2. Fetch Shipping Rules from DB (iOS cache bust added)
     const fetchShippingRules = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/api/shipping/all`);
+        const { data } = await axios.get(
+          `${API_URL}/api/shipping/all?timestamp=${new Date().getTime()}`,
+          {
+            headers: { "Cache-Control": "no-cache" },
+          }
+        );
         setAllShippingRules(data.methods || []);
       } catch (error) {
         console.error("Failed to load shipping rules", error);
@@ -150,7 +168,7 @@ const CheckoutSection = () => {
     let baseSGST = 0;
     let baseCGST = 0;
 
-    cartData.items.forEach((item) => {
+    (cartData?.items || []).forEach((item) => {
       // FIX: Always use discountPrice if it exists
       const sellingPrice =
         item.variant?.discountPrice > 0
@@ -186,7 +204,7 @@ const CheckoutSection = () => {
     e.preventDefault();
     if (!promoCode.trim()) return toast.warning("Please enter a coupon code.");
     try {
-      const formattedCartItems = cartData.items.map((item) => {
+      const formattedCartItems = (cartData?.items || []).map((item) => {
         const pId = item.product?._id || item.product;
         const cId = item.product?.category?._id || item.product?.category;
 
@@ -970,7 +988,7 @@ const CheckoutSection = () => {
                       {loading ? (
                         <p className="text-center">Loading items...</p>
                       ) : (
-                        cartData.items.map((item, index) => {
+                        (cartData?.items || []).map((item, index) => {
                           const title = item.product?.title || "Product";
                           const imgPath =
                             item.variant?.images?.[0] ||
@@ -994,7 +1012,7 @@ const CheckoutSection = () => {
                               key={item._id}
                               style={{
                                 borderBottom:
-                                  index !== cartData.items.length - 1
+                                  index !== (cartData?.items || []).length - 1
                                     ? "1px solid #f0f0f0"
                                     : "none",
                               }}
