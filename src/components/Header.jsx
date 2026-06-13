@@ -494,12 +494,18 @@ const Header = () => {
                       const defaultVariant =
                         item.variants?.find((v) => v.isDefault) ||
                         item.variants?.[0];
-                      const displayImage =
-                        defaultVariant?.images?.[0] || item.thumbnail
-                          ? `${API_URL}${
-                              defaultVariant?.images?.[0] || item.thumbnail
-                            }`
-                          : "/assets/img/placeholder.jpg";
+
+                      // CRITICAL FIX: Safe image check matching CreateStock.jsx logic
+                      const rawImg =
+                        defaultVariant?.images?.[0] ||
+                        item.thumbnail ||
+                        item.images?.[0];
+                      const displayImage = rawImg
+                        ? rawImg.startsWith("http")
+                          ? rawImg
+                          : `${API_URL}${rawImg}`
+                        : "/assets/img/placeholder.jpg";
+
                       const displayPrice =
                         defaultVariant?.discountPrice > 0
                           ? defaultVariant.discountPrice
